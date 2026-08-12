@@ -2184,7 +2184,8 @@ const PUBLIC_MODE = true;
   }
 
   function parseKbmNumber(raw) {
-    const n = Number(String(raw ?? "").replace(",", "."));
+    if (raw == null || String(raw).trim() === "") return null;
+    const n = Number(String(raw).replace(",", "."));
     return Number.isFinite(n) ? n : null;
   }
 
@@ -2356,28 +2357,30 @@ const PUBLIC_MODE = true;
     stazhInp.onpaste = () => setTimeout(syncExpFromStazh, 0);
     ageInp.oninput = syncDobFromAge;
     expInp.oninput = syncStazhFromExp;
-    vuInp.oninput = () => applyVu(vuInp.value);
-    vuInp.onpaste = (e) => {
-      const text = (e.clipboardData || window.clipboardData).getData("text");
-      if (!text) return;
-      e.preventDefault();
-      const digits = String(text).replace(/\D/g, "");
-      const cur = parseVuRaw(vuInp.value);
-      if (digits.length >= 10) {
-        applyVu(digits, { format: true });
-      } else if (digits.length === 6 && cur.serie.length === 4 && !cur.number) {
-        applyVu(cur.serie + digits, { format: true });
-      } else if (digits.length === 4 && !cur.serie && !cur.number) {
-        applyVu(digits, { format: true });
-      } else if (digits.length === 6 && !cur.serie) {
-        wrap.dataset.licenseSeries = "";
-        wrap.dataset.licenseNumber = digits;
-        vuInp.value = digits;
-      } else {
-        applyVu(digits, { format: true });
-      }
-    };
-    vuInp.onblur = () => applyVu(vuInp.value, { format: true });
+    if (vuInp) {
+      vuInp.oninput = () => applyVu(vuInp.value);
+      vuInp.onpaste = (e) => {
+        const text = (e.clipboardData || window.clipboardData).getData("text");
+        if (!text) return;
+        e.preventDefault();
+        const digits = String(text).replace(/\D/g, "");
+        const cur = parseVuRaw(vuInp.value);
+        if (digits.length >= 10) {
+          applyVu(digits, { format: true });
+        } else if (digits.length === 6 && cur.serie.length === 4 && !cur.number) {
+          applyVu(cur.serie + digits, { format: true });
+        } else if (digits.length === 4 && !cur.serie && !cur.number) {
+          applyVu(digits, { format: true });
+        } else if (digits.length === 6 && !cur.serie) {
+          wrap.dataset.licenseSeries = "";
+          wrap.dataset.licenseNumber = digits;
+          vuInp.value = digits;
+        } else {
+          applyVu(digits, { format: true });
+        }
+      };
+      vuInp.onblur = () => applyVu(vuInp.value, { format: true });
+    }
   }
 
   function addDriver(pre = {}) {
