@@ -1,0 +1,3884 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Калькулятор ОСАГО — онлайн</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg0: #0f1419;
+      --bg1: #1a2332;
+      --panel: #1e2a3a;
+      --ink: #e8eef6;
+      --muted: #8b9bb0;
+      --line: #2d3d52;
+      --accent: #3d9cf0;
+      --accent-dim: #2a6fa8;
+      --ok: #3ecf8e;
+      --warn: #e8b84a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 480px at 0% 0%, #1a3a5c 0%, transparent 55%),
+        radial-gradient(700px 400px at 100% 10%, #163528 0%, transparent 50%),
+        linear-gradient(165deg, var(--bg0), var(--bg1));
+    }
+    main { max-width: 1080px; margin: 0 auto; padding: 28px 18px 56px; }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+    .sub { margin: 0 0 22px; color: var(--muted); font-size: 0.95rem; }
+    .panel {
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+    }
+    .panel h2 {
+      margin: 0 0 14px;
+      padding: 0 0 10px;
+      font-size: 1.12rem;
+      text-transform: none;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      font-weight: 700;
+      border-bottom: 2px solid color-mix(in srgb, var(--accent) 50%, var(--line));
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .params-row {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+      margin-top: 10px;
+    }
+    .params-row > div > label:first-child {
+      min-height: 2.1em;
+      line-height: 1.25;
+    }
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .params-row { grid-template-columns: 1fr; }
+    }
+    label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      padding-left: 6px;
+    }
+    label.check { padding-left: 0; }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 0.95rem;
+      background: #121a24;
+      color: var(--ink);
+      font-family: inherit;
+    }
+    input:focus, select:focus {
+      outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      border-color: var(--accent);
+    }
+    input::selection, textarea::selection {
+      background: color-mix(in srgb, var(--accent) 55%, #1a3048);
+      color: #fff;
+    }
+    input[type="date"] {
+      color-scheme: dark;
+      min-height: 40px;
+    }
+    input.date-text {
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    input[readonly] {
+      background: #0e1520;
+      color: var(--ink);
+      cursor: default;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 16px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: #041018;
+      font-family: inherit;
+    }
+    button.secondary {
+      background: #2a3648;
+      color: var(--ink);
+    }
+    button.btn-pick {
+      background: linear-gradient(180deg, #4aa3f5 0%, #2f7fd4 100%);
+      color: #041018;
+      padding: 11px 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      box-shadow: 0 0 0 1px rgba(61, 156, 240, 0.35), 0 6px 16px rgba(15, 40, 70, 0.45);
+    }
+    button.btn-pick:hover {
+      background: linear-gradient(180deg, #5bb0f7 0%, #3d9cf0 100%);
+    }
+    button.btn-danger {
+      background: linear-gradient(180deg, #e85d5d 0%, #c62828 100%);
+      color: #fff;
+      padding: 11px 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      box-shadow: 0 0 0 1px rgba(198, 40, 40, 0.35), 0 6px 16px rgba(70, 15, 15, 0.4);
+      margin-left: auto;
+    }
+    button.btn-danger:hover {
+      background: linear-gradient(180deg, #f06a6a 0%, #d32f2f 100%);
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .formula-line {
+      display: none;
+    }
+    .subcalc-out {
+      margin-top: 12px;
+      display: grid;
+      gap: 6px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .subcalc-out .big {
+      color: #4ade9a;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 1.55rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .subcalc-out .ret-line {
+      color: color-mix(in srgb, #4ade9a 70%, var(--muted));
+      font-size: 0.95rem;
+    }
+    .factor-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.82rem;
+    }
+    .factor-table th,
+    .factor-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 6px 4px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .factor-table th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .factor-table input {
+      padding: 6px 7px;
+      font-size: 0.85rem;
+      min-width: 0;
+    }
+    .factor-table .row-label {
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: 0.78rem;
+      padding-right: 8px;
+    }
+    .factor-table .money-cell {
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+      font-size: 0.98rem;
+      color: #4ade9a;
+      white-space: nowrap;
+      min-width: 7.5rem;
+    }
+    .panel.is-locked {
+      opacity: 0.55;
+    }
+    .panel.is-locked #drivers,
+    .panel.is-locked #addDriver {
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    .power-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr minmax(3.5rem, 0.7fr);
+      gap: 4px;
+      align-items: stretch;
+    }
+    .power-split > div { min-width: 0; }
+    .pair-split {
+      display: grid;
+      grid-template-columns: 1fr minmax(4.8rem, 0.85fr);
+      gap: 4px;
+      align-items: stretch;
+    }
+    .pair-split > * { min-width: 0; }
+    .unit-field {
+      position: relative;
+    }
+    .unit-field input {
+      padding-right: 2.2rem;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .unit-field .unit {
+      position: absolute;
+      right: 7px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 0.72rem;
+      pointer-events: none;
+      font-family: "IBM Plex Mono", monospace;
+    }
+    .kvs-out, .km-out {
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+      color: var(--warn);
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #121a24;
+      min-height: 1.2em;
+      display: flex;
+      align-items: center;
+    }
+    .coeff-yellow {
+      color: var(--warn) !important;
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+    }
+    .is-km-off {
+      opacity: 0.55;
+    }
+    .is-km-off .km-out {
+      opacity: 1;
+    }
+    .driver-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .driver-stats {
+      display: grid;
+      grid-template-columns: minmax(6.2rem, 0.7fr) 1.25fr 1.25fr minmax(8.5rem, 1.15fr) minmax(3.2rem, 0.42fr);
+      gap: 12px;
+      margin-top: 10px;
+      align-items: start;
+    }
+    .driver-stats .pair-split { gap: 4px; }
+    .kbm-box {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 22px;
+      align-items: stretch;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #121a24;
+      min-height: 38px;
+      overflow: hidden;
+    }
+    .kbm-box input[data-f="kbm"] {
+      width: 100% !important;
+      min-width: 0;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      text-align: center;
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+    .kbm-spin {
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--line);
+    }
+    .kbm-spin button {
+      flex: 1 1 50%;
+      width: 22px;
+      min-height: 18px;
+      margin: 0;
+      padding: 0 !important;
+      border: 0;
+      border-radius: 0;
+      background: #2a3648 !important;
+      color: #e8eef6 !important;
+      font-size: 9px;
+      line-height: 1;
+      box-shadow: none !important;
+    }
+    .kbm-spin button + button { border-top: 1px solid var(--line); }
+    .kbm-spin button:hover { background: #3d9cf0 !important; color: #041018 !important; }
+    .driver-stats .kvs-out {
+      justify-content: center;
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+    .driver-stats input[data-f="vu"] {
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+    .driver-stats > div > label:first-child {
+      min-height: 1.5em;
+    }
+    @media (max-width: 900px) {
+      .driver-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+    }
+    @media (max-width: 720px) {
+      .driver-grid { grid-template-columns: 1fr 1fr; }
+      .driver-stats { grid-template-columns: 1fr; gap: 10px; }
+    }
+    .drop {
+      border: 1.5px dashed var(--line);
+      border-radius: 12px;
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      background: #121a24;
+      transition: border-color 0.15s, background 0.15s;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .drop:hover, .drop:focus {
+      border-color: var(--accent);
+      background: #152032;
+    }
+    .drop.dragover {
+      border-color: var(--ok);
+      background: #143024;
+    }
+    .drop.busy {
+      pointer-events: none;
+      opacity: 0.85;
+      border-color: var(--warn);
+    }
+    .drop-title { font-weight: 650; font-size: 0.95rem; margin-bottom: 4px; }
+    .drop-sub { color: var(--muted); font-size: 0.8rem; }
+    .drop-progress {
+      display: none;
+      margin-top: 12px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--warn);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    .drop.busy .drop-progress { display: flex; }
+    .spin {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid color-mix(in srgb, var(--warn) 30%, transparent);
+      border-top-color: var(--warn);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .vu-note {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0 0 10px;
+      min-height: 1.2em;
+    }
+    .vu-note.ok { color: var(--ok); }
+    .vu-note.err { color: #ff8a8a; }
+    .vu-note.busy { color: var(--warn); }
+    .driver-pick {
+      margin: 0 0 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #121a24;
+    }
+    .driver-pick-head {
+      font-weight: 650;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    .driver-pick-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 280px;
+      overflow: auto;
+      margin-bottom: 10px;
+    }
+    .driver-pick-list label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--ink);
+      font-size: 0.88rem;
+      line-height: 1.35;
+    }
+    .driver-pick-list label:hover { background: #1a2c42; }
+    .driver-pick-list input { width: auto; flex-shrink: 0; margin-top: 2px; }
+    .driver-pick-meta {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-family: "IBM Plex Mono", monospace;
+    }
+    .driver-pick .actions { margin-top: 0; gap: 8px; flex-wrap: wrap; }
+
+    .car-picker-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      z-index: 50;
+    }
+    .car-picker-wrap:has(#carPickerPop:not([hidden])) {
+      z-index: 250;
+    }
+    .car-picker-pop {
+      position: absolute;
+      left: calc(100% + 10px);
+      top: 0;
+      z-index: 200;
+      width: min(720px, calc(100vw - 48px));
+      background: #121a24;
+      border: 1px solid #3d536e;
+      border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      padding: 12px;
+      transform-origin: left top;
+      animation: carPopIn 0.18s ease-out;
+      overflow: visible;
+    }
+    @keyframes carPopIn {
+      from { opacity: 0; transform: translateX(-8px) scale(0.98); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    .car-picker-pop::before {
+      content: "";
+      position: absolute;
+      left: -6px;
+      top: 14px;
+      width: 10px;
+      height: 10px;
+      background: #121a24;
+      border-left: 1px solid #3d536e;
+      border-bottom: 1px solid #3d536e;
+      transform: rotate(45deg);
+    }
+    .car-picker-cols {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 12px;
+      min-height: 280px;
+    }
+    .car-picker-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      overflow: visible;
+    }
+    .car-picker-col h4 {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #8b9bb0;
+      font-weight: 600;
+    }
+    .car-picker-search {
+      width: 100%;
+      margin-bottom: 8px;
+      background: #0d141d;
+      border: 1px solid #3d536e;
+      border-radius: 8px;
+      color: var(--ink);
+      padding: 8px 10px;
+      font: inherit;
+    }
+    .car-picker-search:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .car-picker-list {
+      flex: 1;
+      overflow: auto;
+      max-height: 260px;
+      border: 1px solid #2a3648;
+      border-radius: 8px;
+      background: #0d141d;
+    }
+    .car-picker-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: var(--ink);
+      border: 0;
+      border-bottom: 1px solid #1a2433;
+      border-radius: 0;
+      padding: 9px 10px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .car-picker-item:hover { background: #1a2c42; }
+    .car-picker-item.active {
+      background: #243246;
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+    .car-picker-item .meta {
+      display: block;
+      margin-top: 3px;
+      font-size: 0.72rem;
+      color: #8b9bb0;
+      font-weight: 500;
+    }
+    .car-picker-hint {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #1a2433;
+      border: 1px solid #2a3648;
+      font-size: 0.8rem;
+      color: #c5d0de;
+      line-height: 1.35;
+    }
+    .car-picker-hint strong {
+      color: var(--warn);
+      font-family: "IBM Plex Mono", monospace;
+    }
+    .car-picker-hint .muted { color: #8b9bb0; }
+    .addr-suggest-wrap {
+      position: relative;
+      margin-top: 8px;
+      z-index: 300;
+    }
+    .addr-suggest-list {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(100% + 4px);
+      top: auto;
+      z-index: 400;
+      max-height: 240px;
+      overflow: auto;
+      background: #0d141d;
+      border: 1px solid #3d536e;
+      border-radius: 8px;
+      box-shadow: 0 -8px 28px rgba(0,0,0,0.45);
+    }
+    .addr-suggest-list button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: var(--ink);
+      border: 0;
+      border-bottom: 1px solid #1a2433;
+      border-radius: 0;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .addr-suggest-list button:hover { background: #1a2c42; }
+    .addr-suggest-list .meta {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.72rem;
+      color: #8b9bb0;
+    }
+    .car-picker-drivers label {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 8px 10px;
+      border-bottom: 1px solid #1a2433;
+      cursor: pointer;
+      font-size: 0.86rem;
+    }
+    .car-picker-drivers label:hover { background: #1a2c42; }
+    .car-picker-drivers label.from-car { background: rgba(61, 156, 240, 0.08); }
+    .car-picker-drivers input { width: auto; margin-top: 2px; flex-shrink: 0; }
+    .car-picker-drivers .meta {
+      font-size: 0.72rem;
+      color: #8b9bb0;
+      margin-top: 2px;
+    }
+    .car-picker-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .car-picker-actions button {
+      padding: 7px 10px;
+      font-size: 0.82rem;
+    }
+    @media (max-width: 900px) {
+      .car-picker-pop {
+        left: 0;
+        top: calc(100% + 8px);
+        width: min(560px, calc(100vw - 32px));
+      }
+      .car-picker-pop::before {
+        left: 18px;
+        top: -5px;
+        border-left: 1px solid #3d536e;
+        border-bottom: 0;
+        border-top: 1px solid #3d536e;
+      }
+      .car-picker-cols { grid-template-columns: 1fr; }
+    }
+    .result {
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .result .sum {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 2.15rem;
+      font-weight: 600;
+      color: #4ade9a;
+      letter-spacing: -0.02em;
+    }
+    .result .hint {
+      color: var(--ink);
+      font-size: 1.12rem;
+      margin-top: 0;
+      margin-bottom: 8px;
+      padding-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-transform: none;
+      border-bottom: 2px solid color-mix(in srgb, var(--ok) 45%, var(--line));
+    }
+    .factors {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      margin-top: 14px;
+      overflow-x: auto;
+    }
+    .factor {
+      flex: 1 1 0;
+      min-width: 0;
+      background: #243246;
+      border: 1px solid #3d536e;
+      border-radius: 8px;
+      padding: 8px 4px;
+      text-align: center;
+    }
+    .factor b {
+      display: block;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #f0c14d;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .factor span {
+      font-size: 0.68rem;
+      color: #b8c6d8;
+      font-weight: 600;
+    }
+    .driver {
+      border-top: 1px dashed var(--line);
+      padding-top: 12px;
+      margin-top: 10px;
+    }
+    .driver:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+    .driver-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .err {
+      color: #ff8a8a;
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+    .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      max-width: 100%;
+      margin-top: 12px;
+      margin-bottom: 2px;
+      padding: 4px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+    }
+    .check input { width: auto; flex-shrink: 0; }
+    .tb-block { grid-column: 1 / -1; }
+    .kt-row {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr) auto;
+      gap: 10px;
+      margin-top: 8px;
+      align-items: end;
+    }
+    .kt-row select,
+    .kt-row .tb-pick {
+      width: 100%;
+      min-width: 0;
+    }
+    .kt-row .kt-coeff {
+      min-width: 3.2rem;
+      padding-bottom: 2px;
+    }
+    .kt-row .tb-btn {
+      align-items: center;
+      padding: 9px 10px;
+    }
+    .kt-row .tb-btn-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    @media (max-width: 720px) {
+      .kt-row { grid-template-columns: 1fr; align-items: stretch; }
+    }
+    .tb-pick { position: relative; }
+    .tb-btn {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #121a24;
+      color: var(--ink);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .tb-btn:hover { border-color: var(--accent); }
+    .tb-btn-name { flex: 1; line-height: 1.35; }
+    .tb-rate {
+      flex-shrink: 0;
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--warn);
+      white-space: nowrap;
+    }
+    .tb-list {
+      display: none;
+      position: absolute;
+      z-index: 20;
+      left: 0; right: 0;
+      top: calc(100% + 4px);
+      max-height: 320px;
+      overflow: auto;
+      margin: 0;
+      padding: 6px;
+      list-style: none;
+      background: #0d1520;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    }
+    .tb-list.open {
+      display: block;
+      position: fixed;
+      z-index: 10000;
+      right: auto;
+    }
+    .tb-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      line-height: 1.35;
+    }
+    .tb-list li:hover,
+    .tb-list li.active { background: #1a2c42; }
+    .tb-list .tb-name { color: var(--ink); font-size: 0.88rem; }
+    .tb-hint {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .tb-hint strong {
+      color: var(--warn);
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+    }
+    .tb-value-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-top: 12px;
+    }
+    .tb-slider-wrap { margin-top: 10px; }
+    .tb-bounds {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-bottom: 2px;
+      font-family: "IBM Plex Mono", monospace;
+      line-height: 1;
+    }
+    .tb-bounds .on {
+      color: var(--ok);
+      font-weight: 600;
+    }
+    .tb-slider-wrap input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 16px;
+      margin: 0;
+      padding: 0;
+      border-radius: 999px;
+      background: #2a3648;
+      background-size: 100% 6px;
+      background-repeat: no-repeat;
+      background-position: center;
+      cursor: pointer;
+      outline: none;
+    }
+    .tb-slider-wrap input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 999px;
+      background: transparent;
+    }
+    .tb-slider-wrap input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      margin-top: -5px;
+      border-radius: 50%;
+      background: var(--warn);
+      border: 2px solid #0d1520;
+      box-shadow: 0 0 0 1px var(--warn);
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+    .tb-slider-wrap input[type="range"]::-moz-range-track {
+      height: 6px;
+      border-radius: 999px;
+      background: #2a3648;
+      border: none;
+    }
+    .tb-slider-wrap input[type="range"]::-moz-range-progress {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--warn);
+    }
+    .tb-slider-wrap input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--warn);
+      border: 2px solid #0d1520;
+      cursor: pointer;
+    }
+    .tb-quick {
+      display: flex;
+      gap: 6px;
+    }
+    .tb-quick button {
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      background: #2a3648;
+      color: var(--ink);
+    }
+    .tb-value-input {
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+      color: var(--warn);
+      font-size: 1.05rem;
+    }
+    .tb-out {
+      margin-top: 8px;
+      font-size: 0.78rem;
+      min-height: 1.1em;
+      text-align: center;
+    }
+    .tb-out.warn { color: #ff8a8a; }
+    .tb-out.ok { color: var(--muted); }
+
+    .ref-note {
+      margin: 0 0 14px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .ref-note a { color: var(--accent); }
+    .ref-grid {
+      display: grid;
+      grid-template-columns: minmax(200px, 0.85fr) 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .ref-grid { grid-template-columns: 1fr; }
+    }
+    .ref-card {
+      background: #121a24;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      overflow: auto;
+    }
+    .ref-card h3 {
+      margin: 0 0 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .ref-card .ref-sub {
+      margin: -4px 0 10px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .ref-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.72rem;
+      font-family: "IBM Plex Mono", monospace;
+    }
+    .ref-table th, .ref-table td {
+      padding: 5px 6px;
+      text-align: center;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+      white-space: nowrap;
+    }
+    .ref-table th {
+      background: #1a2738;
+      color: var(--muted);
+      font-weight: 600;
+      font-family: "DM Sans", sans-serif;
+      font-size: 0.68rem;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .ref-table th:first-child,
+    .ref-table td:first-child {
+      text-align: left;
+      font-family: "DM Sans", sans-serif;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .ref-table tr:last-child td { border-bottom: none; }
+    .ref-table td.heat {
+      font-weight: 600;
+      border-radius: 4px;
+    }
+    .ref-table td.dash { color: #3a4a5c; }
+    .ref-table td.old-kbm { color: var(--muted); font-weight: 500; }
+    .ref-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 720px) {
+      .ref-pair { grid-template-columns: 1fr; }
+    }
+    .ref-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 14px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .ref-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ref-legend i {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+  
+    .driver-stats--compact {
+      grid-template-columns: minmax(6.2rem, 0.7fr) 1.25fr 1.25fr minmax(3.2rem, 0.42fr);
+    }
+
+  </style>
+</head>
+<body>
+<main>
+  <h1>Калькулятор ОСАГО</h1>
+  <p class="sub">Онлайн-калькулятор · КБМ вводится вручную · работает без сервера<br>Указание Банка России № 7204-У · тарифный коридор, водители, КБМ</p>
+
+  <section class="panel">
+    <h2>Авто и тариф</h2>
+    <div class="grid">
+      <div class="tb-block">
+        <label>ТБ — категория ТС (коридор)</label>
+        <div class="tb-pick" id="tbPick">
+          <button type="button" class="tb-btn" id="tbBtn" aria-haspopup="listbox" aria-expanded="false">
+            <span class="tb-btn-name" id="tbBtnName">—</span>
+            <span class="tb-rate" id="tbBtnRate">—</span>
+          </button>
+          <ul class="tb-list" id="tbList" role="listbox"></ul>
+        </div>
+        <div class="tb-value-row">
+          <div>
+            <label for="tbValue">Ставка ТБ в расчёте, ₽</label>
+            <input id="tbValue" class="tb-value-input" type="number" step="1">
+          </div>
+          <div class="tb-quick">
+            <button type="button" id="tbMinBtn" title="Минимум коридора">min</button>
+            <button type="button" id="tbMaxBtn" title="Максимум коридора">max</button>
+          </div>
+        </div>
+        <div class="tb-slider-wrap">
+          <div class="tb-bounds">
+            <span id="tbBoundMin">—</span>
+            <span id="tbBoundMax">—</span>
+          </div>
+          <input id="tbSlider" type="range" step="1">
+        </div>
+        <p class="tb-out ok" id="tbOut">Тарифный коридор …</p>
+      </div>
+      <div class="tb-block">
+        <label>КТ — территория преимущественного использования</label>
+        <div class="kt-row">
+          <div>
+            <label for="ktRegion">Регион</label>
+            <select id="ktRegion"></select>
+          </div>
+          <div>
+            <label for="ktPlaceBtn">Населённый пункт</label>
+            <div class="tb-pick" id="ktPlacePick">
+              <button type="button" class="tb-btn" id="ktPlaceBtn" aria-haspopup="listbox" aria-expanded="false">
+                <span class="tb-btn-name" id="ktPlaceName">—</span>
+                <span class="tb-rate" id="ktPlaceRate">—</span>
+              </button>
+              <ul class="tb-list" id="ktPlaceList" role="listbox"></ul>
+            </div>
+          </div>
+          <div class="kt-coeff">
+            <label>КТ</label>
+            <div id="ktValue" class="tb-rate" style="padding:9px 0;font-size:1.1rem">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+      <div class="params-row">
+        <div>
+          <label>КМ — мощность</label>
+          <div class="power-split">
+            <div class="unit-field">
+              <input id="powerHp" type="number" step="1" min="1" value="110" aria-label="Мощность, л.с.">
+              <span class="unit">л.с.</span>
+            </div>
+            <div class="unit-field">
+              <input id="powerKw" type="number" step="0.1" min="0.1" value="80.9" aria-label="Мощность, кВт">
+              <span class="unit">кВт</span>
+            </div>
+            <div class="km-out" id="kmValue" title="Коэффициент КМ">—</div>
+          </div>
+        </div>
+        <div>
+          <label for="months">КС — период использования, мес</label>
+          <div class="pair-split">
+            <select id="months">
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10" selected>10+</option>
+            </select>
+            <div class="km-out" id="ksValue" title="Коэффициент КС">—</div>
+          </div>
+        </div>
+        <div>
+          <label for="ko">КО (допуск)</label>
+          <div class="pair-split">
+            <select id="ko">
+              <option value="1" selected>Ограниченный</option>
+              <option value="3.16">Неограниченный</option>
+            </select>
+            <div class="km-out" id="koValue" title="Коэффициент КО">1</div>
+          </div>
+        </div>
+      </div>
+      <label class="check" for="legal">
+        <input type="checkbox" id="legal">
+        <span>Собственник — юрлицо (КВС × 1,8)</span>
+      </label>
+  </section>
+
+  <section class="panel" id="driversPanel">
+    <h2>Водители</h2>
+    <p class="tb-hint" id="driversHint" hidden>Неограниченный допуск (физлицо): КБМ = 1,17, список водителей не используется</p>
+    <div id="drivers"></div>
+    <div class="actions">
+      <button type="button" class="secondary" id="addDriver">+ водитель</button>
+      <button type="button" class="btn-danger" id="clearDrivers">Очистить водителей</button>
+    </div>
+  </section>
+
+  <section class="result" id="result">
+    <div class="hint">Премия ОСАГО</div>
+    <div class="sum" id="sum">—</div>
+    <div class="factors" id="factors"></div>
+    <div id="err" class="err" hidden></div>
+  </section>
+
+  <section class="panel" id="refundPanel">
+    <h2>Возврат премии при расторжении</h2>
+    <div class="grid">
+      <div>
+        <label for="paid">Премия по договору, ₽</label>
+        <input id="paid" type="number" step="0.01" value="4873">
+      </div>
+      <div>
+        <label for="refundStart">Дата начала полиса</label>
+        <input id="refundStart" class="date-text" type="text" inputmode="numeric" placeholder="дд.мм.гггг" value="17.03.2026" autocomplete="off" spellcheck="false" maxlength="10">
+      </div>
+      <div>
+        <label for="refundEnd">Дата расторжения</label>
+        <input id="refundEnd" class="date-text" type="text" inputmode="numeric" placeholder="дд.мм.гггг" value="20.07.2026" autocomplete="off" spellcheck="false" maxlength="10">
+      </div>
+    </div>
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <label for="daysUsed">Дней прошло</label>
+        <input id="daysUsed" type="text" inputmode="numeric" value="" readonly tabindex="-1" title="Считается по датам начала и расторжения">
+      </div>
+      <div>
+        <label>Срок страхования, дней</label>
+        <div class="tb-rate" style="padding:9px 0" id="refundYearDays">365</div>
+      </div>
+    </div>
+    <div class="subcalc-out" id="refundOut">
+      <div class="hint">Введите премию и даты</div>
+    </div>
+  </section>
+
+  <section class="panel" id="endorsePanel">
+    <h2>Доплата за вписание</h2>
+    <div class="grid">
+      <div>
+        <label for="endorseDate">Дата вписания</label>
+        <input id="endorseDate" class="date-text" type="text" inputmode="numeric" placeholder="дд.мм.гггг" value="22.07.2026" autocomplete="off" spellcheck="false" maxlength="10">
+      </div>
+      <div>
+        <label for="endorseEnd">Дата окончания полиса</label>
+        <input id="endorseEnd" class="date-text" type="text" inputmode="numeric" placeholder="дд.мм.гггг" value="11.07.2027" autocomplete="off" spellcheck="false" maxlength="10">
+      </div>
+      <div>
+        <label>Дней осталось</label>
+        <div class="tb-rate" style="padding:9px 0" id="endorseDaysLeft">—</div>
+      </div>
+    </div>
+    <div class="actions" style="margin-top:8px">
+      <button type="button" class="secondary" id="endorseFromCalc">Подставить из текущего расчёта</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="factor-table" id="endorseTable">
+        <thead>
+          <tr>
+            <th></th>
+            <th>ТБ</th>
+            <th>КТ</th>
+            <th>КБМ</th>
+            <th>КВС</th>
+            <th>КО</th>
+            <th>КС</th>
+            <th>КМ</th>
+            <th>Сумма</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-row="old">
+            <td class="row-label">Было</td>
+            <td><input data-f="tb" type="number" step="1" value="8557"></td>
+            <td><input data-f="kt" type="number" step="0.01" value="0.88"></td>
+            <td><input data-f="kbm" type="number" step="0.01" value="0.46"></td>
+            <td><input data-f="kvs" type="number" step="0.01" value="0.91"></td>
+            <td><input data-f="ko" type="number" step="0.01" value="1"></td>
+            <td><input data-f="ks" type="number" step="0.01" value="1"></td>
+            <td><input data-f="km" type="number" step="0.01" value="1.2"></td>
+            <td class="money-cell" id="endorseOldPremium">—</td>
+          </tr>
+          <tr data-row="new1">
+            <td class="row-label">Вариант 1</td>
+            <td><input data-f="tb" type="number" step="1" value="8665"></td>
+            <td><input data-f="kt" type="number" step="0.01" value="0.88"></td>
+            <td><input data-f="kbm" type="number" step="0.01" value="1.17"></td>
+            <td><input data-f="kvs" type="number" step="0.01" value="2.27"></td>
+            <td><input data-f="ko" type="number" step="0.01" value="1"></td>
+            <td><input data-f="ks" type="number" step="0.01" value="1"></td>
+            <td><input data-f="km" type="number" step="0.01" value="1.2"></td>
+            <td class="money-cell" id="endorseNew1">—</td>
+          </tr>
+          <tr data-row="new2">
+            <td class="row-label">Вариант 2</td>
+            <td><input data-f="tb" type="number" step="1" value="8665"></td>
+            <td><input data-f="kt" type="number" step="0.01" value="0.88"></td>
+            <td><input data-f="kbm" type="number" step="0.01" value="0.78"></td>
+            <td><input data-f="kvs" type="number" step="0.01" value="0.94"></td>
+            <td><input data-f="ko" type="number" step="0.01" value="1"></td>
+            <td><input data-f="ks" type="number" step="0.01" value="1"></td>
+            <td><input data-f="km" type="number" step="0.01" value="1.2"></td>
+            <td class="money-cell" id="endorseNew2">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="hint" id="endorseHint" style="margin-top:10px;color:var(--muted)" hidden></div>
+  </section>
+
+  <section class="panel" id="refTablesPanel">
+    <h2>Справочник коэффициентов</h2>
+    <p class="ref-note">
+      Значения из приложения 2 к
+      <a href="https://www.consultant.ru/document/cons_doc_LAW_519961/" target="_blank" rel="noopener">Указанию Банка России № 7204-У</a>
+      (те же данные, что использует калькулятор). Колонка «было» у КБМ — только для сравнения со старой шкалой, в расчёте не участвует.
+    </p>
+    <div class="ref-card" id="refKbm"></div>
+    <div class="ref-pair" style="margin-top:14px">
+      <div class="ref-card" id="refKs"></div>
+      <div class="ref-card" id="refKm"></div>
+    </div>
+    <div class="ref-pair" style="margin-top:14px">
+      <div class="ref-card" id="refKvs"></div>
+      <div class="ref-card" id="refKvsAm"></div>
+    </div>
+  </section>
+</main>
+<script>
+
+/** Расчёт ОСАГО в браузере (без сервера). Порт логики osago_calc.py */
+(function (root) {
+  "use strict";
+
+  function asDate(v) {
+    if (v == null || v === "") return null;
+    const s = String(v).trim();
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/) || s.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+    if (!m) return null;
+    if (m[0].includes(".")) return new Date(+m[3], +m[2] - 1, +m[1]);
+    return new Date(+m[1], +m[2] - 1, +m[3]);
+  }
+
+  function yearsBetween(born, on) {
+    const d = on || new Date();
+    let y = d.getFullYear() - born.getFullYear();
+    const md = d.getMonth() * 100 + d.getDate();
+    const bm = born.getMonth() * 100 + born.getDate();
+    if (md < bm) y -= 1;
+    return Math.max(0, y);
+  }
+
+  function approxLookupIndex(value, keys) {
+    let idx = 0;
+    for (let i = 0; i < keys.length; i++) {
+      if (keys[i] <= value) idx = i;
+      else break;
+    }
+    return idx;
+  }
+
+  function vehicleGroup(category) {
+    const c = String(category || "B").toUpperCase().trim().replace(/ /g, "_");
+    if (["A", "M", "A1", "B1", "A_M", "AM"].includes(c) || c.startsWith("A_")) return "A";
+    if (["B", "BE"].includes(c) || c.startsWith("B_")) return "B";
+    if (
+      ["OTHER", "C", "CE", "C1", "C1E", "D", "DE", "D1", "D1E", "TB", "TM", "TRACTOR"].includes(c) ||
+      c.startsWith("C_") ||
+      c.startsWith("D") ||
+      c.startsWith("T")
+    ) return "OTHER";
+    return "B";
+  }
+
+  function kvsCoefficient(ageYears, experienceYears, { legalEntity = false, category = "B", tariffs } = {}) {
+    if (ageYears == null || experienceYears == null) {
+      throw new Error("Нужны возраст и стаж для расчёта КВС");
+    }
+    const group = vehicleGroup(category);
+    let ages;
+    let table;
+    if (group === "A") {
+      ages = (tariffs.kvs_age_mins_am || tariffs.kvs_age_mins).map(Number);
+      table = tariffs.kvs_table_am || tariffs.kvs_table;
+    } else {
+      ages = tariffs.kvs_age_mins.map(Number);
+      table = tariffs.kvs_table;
+    }
+    const exps = tariffs.kvs_exp_mins.map(Number);
+    const ri = approxLookupIndex(Number(ageYears), ages);
+    const ci = approxLookupIndex(Number(experienceYears), exps);
+    const row = table[ri];
+    let k;
+    if (ci >= row.length || row[ci] == null) {
+      const filled = row.filter((c) => c != null);
+      if (!filled.length) throw new Error("Пустая строка КВС");
+      k = Number(filled[filled.length - 1]);
+    } else {
+      k = Number(row[ci]);
+    }
+    if (legalEntity) k *= Number(tariffs.kvs_legal_multiplier || 1.8);
+    return Math.round(k * 10000) / 10000;
+  }
+
+  function kmCoefficient(powerHp, { category = "B", tariffs } = {}) {
+    const group = vehicleGroup(category);
+    if (group === "OTHER") return 1;
+    const bands = group === "A" ? tariffs.km_am : tariffs.km_b;
+    const hp = Number(powerHp);
+    for (const band of bands) {
+      const mx = band.max_hp;
+      if (mx == null || hp <= Number(mx)) return Number(band.k);
+    }
+    return Number(bands[bands.length - 1].k);
+  }
+
+  function ksCoefficient(months, { tariffs } = {}) {
+    const m = Number(months);
+    if (m >= 10) return Number(tariffs.ks_months["10"]);
+    const key = String(Math.max(3, Math.min(9, m)));
+    return Number(tariffs.ks_months[key] ?? 1);
+  }
+
+  function resolveTb(tb, { tariffs, prefer = "max" } = {}) {
+    const cats = tariffs.tb_categories || [];
+    const byId = Object.fromEntries(cats.map((c) => [c.id, c]));
+    if (tb == null || tb === "") {
+      const cat = byId.B_phys || cats[0];
+      if (!cat) throw new Error("Нет категорий ТБ");
+      return Number(prefer === "max" ? cat.max : cat.min);
+    }
+    if (typeof tb === "number" && Number.isFinite(tb)) return tb;
+    const s = String(tb).trim();
+    if (byId[s]) {
+      const cat = byId[s];
+      return Number(prefer === "max" ? cat.max : cat.min);
+    }
+    const presets = tariffs.tb_presets || {};
+    if (presets[s] != null) return Number(presets[s]);
+    if (s === "tb_max" || s === "B_phys_max") return resolveTb("B_phys", { tariffs, prefer: "max" });
+    if (s === "tb_min" || s === "B_phys_min") return resolveTb("B_phys", { tariffs, prefer: "min" });
+    return Number(s.replace(",", ".").replace(/ /g, ""));
+  }
+
+  function optionalYears(value) {
+    if (value == null || value === "") return null;
+    const n = Number(value);
+    if (!Number.isFinite(n)) return null;
+    return n;
+  }
+
+  function driverAgeExperience(d) {
+    let ageY = optionalYears(d.age);
+    let expY = optionalYears(d.experience);
+    const bd = asDate(d.birthday || d.birth_date);
+    const ld = asDate(d.stazh_start || d.license_date);
+    const today = new Date();
+    if (ageY == null && bd) ageY = yearsBetween(bd, today);
+    if (expY == null && ld) expY = yearsBetween(ld, today);
+    if (ageY == null || expY == null) {
+      throw new Error("Укажите возраст и стаж (или даты рождения и начала стажа) для каждого водителя");
+    }
+    return [Number(ageY), Number(expY)];
+  }
+
+  function fNum(v, def = 1) {
+    if (v == null || v === "") return def;
+    const n = Number(v);
+    if (!Number.isFinite(n)) throw new Error(`Некорректный коэффициент: ${v}`);
+    if (n !== n) return def;
+    return n;
+  }
+
+  function calculatePremium(opts, tariffs) {
+    const tbV = resolveTb(opts.tb, { tariffs });
+    const ktV = fNum(opts.kt, 1);
+    const kbmV = fNum(opts.kbm, 1);
+    const koV = fNum(opts.ko, 1);
+    const kprV = fNum(opts.kpr, 1);
+    const kpV = fNum(opts.kp, 1);
+    const knV = fNum(opts.kn, 1);
+    const vehicleCategory = opts.vehicle_category || "B";
+    let kvsV;
+    let ageUsed = null;
+    let expUsed = null;
+
+    if (opts.kvs == null) {
+      let ageY = opts.age;
+      let expY = opts.experience;
+      const bd = asDate(opts.birth_date);
+      const ld = asDate(opts.license_date);
+      const today = new Date();
+      if (ageY == null && bd) ageY = yearsBetween(bd, today);
+      if (expY == null && ld) expY = yearsBetween(ld, today);
+      if (ageY == null || expY == null) {
+        throw new Error("Нужны КВС вручную или возраст/стаж (или даты рождения и прав)");
+      }
+      kvsV = kvsCoefficient(ageY, expY, {
+        legalEntity: !!opts.legal_entity,
+        category: vehicleCategory,
+        tariffs,
+      });
+      ageUsed = Number(ageY);
+      expUsed = Number(expY);
+    } else {
+      kvsV = fNum(opts.kvs, 1);
+      if (opts.legal_entity) {
+        kvsV = Math.round(kvsV * Number(tariffs.kvs_legal_multiplier || 1.8) * 10000) / 10000;
+      }
+      ageUsed = opts.age != null ? Number(opts.age) : null;
+      expUsed = opts.experience != null ? Number(opts.experience) : null;
+    }
+
+    let kmV;
+    let powerUsed = opts.power_hp != null ? Number(opts.power_hp) : null;
+    if (opts.km == null) {
+      if (vehicleGroup(vehicleCategory) === "OTHER") {
+        kmV = 1;
+      } else if (opts.power_hp == null) {
+        throw new Error("Нужны КМ вручную или мощность л.с.");
+      } else {
+        kmV = kmCoefficient(opts.power_hp, { category: vehicleCategory, tariffs });
+      }
+    } else {
+      kmV = vehicleGroup(vehicleCategory) === "OTHER" ? 1 : fNum(opts.km, 1);
+    }
+
+    const ksV = opts.ks != null ? fNum(opts.ks, 1) : ksCoefficient(opts.use_months ?? 10, { tariffs });
+    const factors = {
+      tb: tbV,
+      kt: ktV,
+      kbm: kbmV,
+      ko: koV,
+      kvs: kvsV,
+      km: kmV,
+      kpr: kprV,
+      ks: ksV,
+      kp: kpV,
+      kn: knV,
+    };
+    let premium = 1;
+    for (const v of Object.values(factors)) premium *= v;
+
+    return {
+      ok: true,
+      premium: Math.round(premium * 100) / 100,
+      factors,
+      meta: {
+        age_years: ageUsed,
+        experience_years: expUsed,
+        power_hp: powerUsed,
+        vehicle_category: vehicleCategory,
+        use_months: Number(opts.use_months ?? 10),
+        legal_entity: !!opts.legal_entity,
+      },
+    };
+  }
+
+  function calculateForDrivers(drivers, opts, tariffs) {
+    if (!drivers || !drivers.length) throw new Error("Нужен хотя бы один водитель");
+    const vehicleCategory = opts.vehicle_category || "B";
+    const kbmMax = Math.max(...drivers.map((d) => Number(d.kbm || 1)));
+    const details = [];
+    const kvsVals = [];
+    for (const d of drivers) {
+      let kv;
+      let ageUsed;
+      let expUsed;
+      if (d.kvs != null && d.kvs !== "") {
+        kv = Number(d.kvs);
+        ageUsed = optionalYears(d.age);
+        expUsed = optionalYears(d.experience);
+      } else {
+        [ageUsed, expUsed] = driverAgeExperience(d);
+        kv = kvsCoefficient(ageUsed, expUsed, { legalEntity: false, category: vehicleCategory, tariffs });
+      }
+      kvsVals.push(kv);
+      details.push({
+        name: d.name || "",
+        kbm: Number(d.kbm || 1),
+        kvs: kv,
+        age: ageUsed,
+        experience: expUsed,
+      });
+    }
+    let kvsMax = Math.max(...kvsVals);
+    if (opts.legal_entity) {
+      kvsMax = Math.round(kvsMax * Number(tariffs.kvs_legal_multiplier || 1.8) * 10000) / 10000;
+    }
+    const out = calculatePremium(
+      {
+        ...opts,
+        kbm: kbmMax,
+        kvs: kvsMax,
+        legal_entity: false,
+      },
+      tariffs
+    );
+    out.drivers = details;
+    out.kbm_used = kbmMax;
+    out.kvs_used = kvsMax;
+    return out;
+  }
+
+  root.OsagoCalcClient = {
+    calculatePremium,
+    calculateForDrivers,
+    vehicleGroup,
+    kmCoefficient,
+    ksCoefficient,
+    kvsCoefficient,
+    resolveTb,
+  };
+})(typeof window !== "undefined" ? window : globalThis);
+
+window.__TARIFFS__ = {"version": 2, "source": "Указание Банка России от 09.10.2025 № 7204-У, приложение 1", "note": "Коридоры ТБ (min–max). Конкретную ставку внутри коридора задаёт страховщик; в калькуляторе по умолчанию берётся максимум категории, либо свой ТБ из поля ввода.", "tb_categories": [{"id": "A_M", "label": "Категории «A», «M» и подкатегории «A1», «B1»", "min": 155, "max": 4260}, {"id": "B_legal", "label": "Категории «B», «BE» — собственник юридическое лицо", "min": 724, "max": 6580}, {"id": "B_phys", "label": "Категории «B», «BE» — собственник физическое лицо / ИП", "min": 1399, "max": 8665}, {"id": "B_taxi", "label": "Категории «B», «BE» — используемые в качестве такси", "min": 1267, "max": 18119}, {"id": "C_le16", "label": "Категории «C», «CE» и подкатегории «C1», «C1E» — разрешённая max масса 16 т и менее", "min": 791, "max": 13709}, {"id": "C_gt16", "label": "Категории «C», «CE» и подкатегории «C1», «C1E» — разрешённая max масса более 16 т", "min": 1489, "max": 17201}, {"id": "D1", "label": "Подкатегории «D1», «D1E» — более 8, но не более 16 сидячих мест (кроме места водителя)", "min": 940, "max": 7846}, {"id": "D", "label": "Категории «D», «DE» (кроме «D1», «D1E») — более 16 сидячих мест", "min": 1175, "max": 9805}, {"id": "D_regular", "label": "Категории «D», «DE» — регулярные перевозки пассажиров", "min": 2295, "max": 11732}, {"id": "Tb", "label": "Категория «Tb» (троллейбусы)", "min": 1254, "max": 6411}, {"id": "Tm", "label": "Категория «Tm» (трамваи)", "min": 783, "max": 3999}, {"id": "tractor", "label": "Тракторы, самоходные дорожно-строительные и иные машины", "min": 383, "max": 3678}], "kt_options_note": "Устарело: полный список КТ в kt_territories.json (прил. 2 к 7204-У)", "kt_options": {"nalchik_prokhladny": 1.0, "other": 0.88}, "ko_options": {"limited": 1.0, "unlimited": 3.16}, "kvs_age_mins": [18, 22, 25, 30, 35, 40, 50, 60], "kvs_exp_mins": [0, 1, 2, 3, 5, 7, 10, 15], "kvs_table": [[2.27, 1.92, 1.84, 1.65, 1.62, null, null, null], [1.88, 1.72, 1.71, 1.13, 1.1, 1.09, null, null], [1.72, 1.6, 1.54, 1.09, 1.08, 1.07, 1.02, null], [1.56, 1.5, 1.48, 1.05, 1.04, 1.01, 0.97, 0.95], [1.54, 1.47, 1.46, 1.0, 0.97, 0.95, 0.94, 0.93], [1.5, 1.44, 1.43, 0.96, 0.95, 0.94, 0.93, 0.91], [1.46, 1.4, 1.39, 0.93, 0.92, 0.91, 0.9, 0.86], [1.43, 1.36, 1.35, 0.91, 0.9, 0.89, 0.88, 0.83]], "kvs_age_mins_am": [16, 22, 25, 30, 35, 40, 50, 60], "kvs_table_am": [[2.27, 2.23, 2.02, 1.8, 1.5, null, null, null], [2.23, 2.23, 2.02, 1.73, 1.49, 1.44, null, null], [2.01, 2.01, 1.81, 1.57, 1.35, 1.29, 1.17, null], [1.7, 1.7, 1.54, 1.33, 1.13, 1.08, 1.01, 0.96], [1.51, 1.51, 1.37, 1.19, 1.01, 0.96, 0.9, 0.89], [1.43, 1.43, 1.3, 1.12, 0.95, 0.91, 0.85, 0.84], [1.39, 1.39, 1.26, 1.08, 0.92, 0.87, 0.82, 0.81], [1.15, 1.12, 1.01, 0.91, 0.86, 0.81, 0.79, 0.76]], "kvs_legal_multiplier": 1.8, "km_b": [{"max_hp": 50, "k": 0.6}, {"max_hp": 70, "k": 1.0}, {"max_hp": 100, "k": 1.1}, {"max_hp": 120, "k": 1.2}, {"max_hp": 150, "k": 1.4}, {"max_hp": null, "k": 1.6}], "km_am": [{"max_hp": 50, "k": 1.0}, {"max_hp": 60, "k": 1.11}, {"max_hp": 70, "k": 1.22}, {"max_hp": 80, "k": 1.36}, {"max_hp": 90, "k": 1.5}, {"max_hp": null, "k": 1.66}], "ks_months": {"3": 0.5, "4": 0.6, "5": 0.65, "6": 0.7, "7": 0.8, "8": 0.9, "9": 0.95, "10": 1.0}, "kbm_class_table": {"M": {"old": 2.45, "new": 3.92}, "0": {"old": 2.3, "new": 2.94}, "1": {"old": 1.55, "new": 2.25}, "2": {"old": 1.4, "new": 1.76}, "3": {"old": 1.0, "new": 1.17}, "4": {"old": 0.95, "new": 1.0}, "5": {"old": 0.9, "new": 0.91}, "6": {"old": 0.85, "new": 0.83}, "7": {"old": 0.8, "new": 0.78}, "8": {"old": 0.75, "new": 0.74}, "9": {"old": 0.7, "new": 0.68}, "10": {"old": 0.65, "new": 0.63}, "11": {"old": 0.6, "new": 0.57}, "12": {"old": 0.55, "new": 0.52}, "13": {"old": 0.5, "new": 0.46}}, "refund_retention": 0.23, "default_year_days": 365, "kt_territories": [{"id": "1", "region": "Республика Адыгея (Адыгея)", "place": null, "label": "Республика Адыгея (Адыгея)", "kt": 1.24, "kt_tractor": 1.0, "plate": "01"}, {"id": "2.1", "region": "Республика Алтай", "place": "Горно-Алтайск", "label": "Республика Алтай — Горно-Алтайск", "kt": 1.24, "kt_tractor": 0.84, "plate": "04"}, {"id": "2.2", "region": "Республика Алтай", "place": "прочие города и населенные пункты", "label": "Республика Алтай — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.66, "plate": "04"}, {"id": "3.1", "region": "Республика Башкортостан", "place": "Благовещенск, Октябрьский", "label": "Республика Башкортостан — Благовещенск, Октябрьский", "kt": 1.16, "kt_tractor": 0.84, "plate": "02"}, {"id": "3.2", "region": "Республика Башкортостан", "place": "Ишимбай, Кумертау, Салават", "label": "Республика Башкортостан — Ишимбай, Кумертау, Салават", "kt": 1.08, "kt_tractor": 0.84, "plate": "02"}, {"id": "3.3", "region": "Республика Башкортостан", "place": "Стерлитамак, Туймазы", "label": "Республика Башкортостан — Стерлитамак, Туймазы", "kt": 1.24, "kt_tractor": 0.84, "plate": "02"}, {"id": "3.4", "region": "Республика Башкортостан", "place": "Уфа", "label": "Республика Башкортостан — Уфа", "kt": 1.56, "kt_tractor": 1.0, "plate": "02"}, {"id": "3.5", "region": "Республика Башкортостан", "place": "прочие города и населенные пункты", "label": "Республика Башкортостан — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.84, "plate": "02"}, {"id": "4.1", "region": "Республика Бурятия", "place": "Улан-Удэ", "label": "Республика Бурятия — Улан-Удэ", "kt": 1.24, "kt_tractor": 0.84, "plate": "03"}, {"id": "4.2", "region": "Республика Бурятия", "place": "прочие города и населенные пункты", "label": "Республика Бурятия — прочие города и населенные пункты", "kt": 0.76, "kt_tractor": 0.7, "plate": "03"}, {"id": "5.1", "region": "Республика Дагестан", "place": "Буйнакск, Дербент, Каспийск, Махачкала, Хасавюрт", "label": "Республика Дагестан — Буйнакск, Дербент, Каспийск, Махачкала, Хасавюрт", "kt": 1.0, "kt_tractor": 0.84, "plate": "05"}, {"id": "5.2", "region": "Республика Дагестан", "place": "прочие города и населенные пункты", "label": "Республика Дагестан — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.92, "plate": "05"}, {"id": "6", "region": "Донецкая Народная Республика", "place": null, "label": "Донецкая Народная Республика", "kt": 0.68, "kt_tractor": 0.68, "plate": "80"}, {"id": "7.1", "region": "Республика Ингушетия", "place": "Малгобек", "label": "Республика Ингушетия — Малгобек", "kt": 1.88, "kt_tractor": 1.52, "plate": "06"}, {"id": "7.2", "region": "Республика Ингушетия", "place": "Назрань", "label": "Республика Ингушетия — Назрань", "kt": 1.64, "kt_tractor": 1.52, "plate": "06"}, {"id": "7.3", "region": "Республика Ингушетия", "place": "прочие города и населенные пункты", "label": "Республика Ингушетия — прочие города и населенные пункты", "kt": 1.64, "kt_tractor": 1.52, "plate": "06"}, {"id": "8.1", "region": "Кабардино-Балкарская Республика", "place": "Нальчик, Прохладный", "label": "Кабардино-Балкарская Республика — Нальчик, Прохладный", "kt": 1.0, "kt_tractor": 0.84, "plate": "07"}, {"id": "8.2", "region": "Кабардино-Балкарская Республика", "place": "прочие города и населенные пункты", "label": "Кабардино-Балкарская Республика — прочие города и населенные пункты", "kt": 0.88, "kt_tractor": 0.76, "plate": "07"}, {"id": "9.1", "region": "Республика Калмыкия", "place": "Элиста", "label": "Республика Калмыкия — Элиста", "kt": 1.24, "kt_tractor": 0.84, "plate": "08"}, {"id": "9.2", "region": "Республика Калмыкия", "place": "прочие города и населенные пункты", "label": "Республика Калмыкия — прочие города и населенные пункты", "kt": 0.9, "kt_tractor": 0.84, "plate": "08"}, {"id": "10", "region": "Карачаево-Черкесская Республика", "place": null, "label": "Карачаево-Черкесская Республика", "kt": 1.0, "kt_tractor": 0.88, "plate": "09"}, {"id": "11.1", "region": "Республика Карелия", "place": "Петрозаводск", "label": "Республика Карелия — Петрозаводск", "kt": 1.24, "kt_tractor": 0.84, "plate": "10"}, {"id": "11.2", "region": "Республика Карелия", "place": "прочие города и населенные пункты", "label": "Республика Карелия — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.6, "plate": "10"}, {"id": "12.1", "region": "Республика Коми", "place": "Сыктывкар", "label": "Республика Коми — Сыктывкар", "kt": 1.38, "kt_tractor": 1.0, "plate": "11"}, {"id": "12.2", "region": "Республика Коми", "place": "Ухта", "label": "Республика Коми — Ухта", "kt": 1.14, "kt_tractor": 0.84, "plate": "11"}, {"id": "12.3", "region": "Республика Коми", "place": "прочие города и населенные пункты", "label": "Республика Коми — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.84, "plate": "11"}, {"id": "13.1", "region": "Республика Крым", "place": "Симферополь", "label": "Республика Крым — Симферополь", "kt": 0.76, "kt_tractor": 0.76, "plate": "82"}, {"id": "13.2", "region": "Республика Крым", "place": "прочие города и населенные пункты", "label": "Республика Крым — прочие города и населенные пункты", "kt": 0.75, "kt_tractor": 0.75, "plate": "82"}, {"id": "14", "region": "Луганская Народная Республика", "place": null, "label": "Луганская Народная Республика", "kt": 0.68, "kt_tractor": 0.68, "plate": "81"}, {"id": "15.1", "region": "Республика Марий Эл", "place": "Волжск", "label": "Республика Марий Эл — Волжск", "kt": 1.0, "kt_tractor": 0.84, "plate": "12"}, {"id": "15.2", "region": "Республика Марий Эл", "place": "Йошкар-Ола", "label": "Республика Марий Эл — Йошкар-Ола", "kt": 1.32, "kt_tractor": 0.84, "plate": "12"}, {"id": "15.3", "region": "Республика Марий Эл", "place": "прочие города и населенные пункты", "label": "Республика Марий Эл — прочие города и населенные пункты", "kt": 0.76, "kt_tractor": 0.6, "plate": "12"}, {"id": "16.1", "region": "Республика Мордовия", "place": "Рузаевка", "label": "Республика Мордовия — Рузаевка", "kt": 1.16, "kt_tractor": 1.0, "plate": "13"}, {"id": "16.2", "region": "Республика Мордовия", "place": "Саранск", "label": "Республика Мордовия — Саранск", "kt": 1.4, "kt_tractor": 1.0, "plate": "13"}, {"id": "16.3", "region": "Республика Мордовия", "place": "прочие города и населенные пункты", "label": "Республика Мордовия — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.68, "plate": "13"}, {"id": "17.1", "region": "Республика Саха (Якутия)", "place": "Нерюнгри", "label": "Республика Саха (Якутия) — Нерюнгри", "kt": 0.92, "kt_tractor": 0.66, "plate": "14"}, {"id": "17.2", "region": "Республика Саха (Якутия)", "place": "Якутск", "label": "Республика Саха (Якутия) — Якутск", "kt": 1.16, "kt_tractor": 0.76, "plate": "14"}, {"id": "17.3", "region": "Республика Саха (Якутия)", "place": "прочие города и населенные пункты", "label": "Республика Саха (Якутия) — прочие города и населенные пункты", "kt": 0.75, "kt_tractor": 0.66, "plate": "14"}, {"id": "18.1", "region": "Республика Северная Осетия - Алания", "place": "Владикавказ", "label": "Республика Северная Осетия - Алания — Владикавказ", "kt": 1.0, "kt_tractor": 0.88, "plate": "15"}, {"id": "18.2", "region": "Республика Северная Осетия - Алания", "place": "прочие города и населенные пункты", "label": "Республика Северная Осетия - Алания — прочие города и населенные пункты", "kt": 0.94, "kt_tractor": 0.76, "plate": "15"}, {"id": "19.1", "region": "Республика Татарстан (Татарстан)", "place": "Альметьевск, Зеленодольск, Нижнекамск", "label": "Республика Татарстан (Татарстан) — Альметьевск, Зеленодольск, Нижнекамск", "kt": 1.24, "kt_tractor": 0.84, "plate": "16"}, {"id": "19.2", "region": "Республика Татарстан (Татарстан)", "place": "Бугульма, Лениногорск, Чистополь", "label": "Республика Татарстан (Татарстан) — Бугульма, Лениногорск, Чистополь", "kt": 1.0, "kt_tractor": 0.84, "plate": "16"}, {"id": "19.3", "region": "Республика Татарстан (Татарстан)", "place": "Елабуга", "label": "Республика Татарстан (Татарстан) — Елабуга", "kt": 1.16, "kt_tractor": 0.84, "plate": "16"}, {"id": "19.4", "region": "Республика Татарстан (Татарстан)", "place": "Казань", "label": "Республика Татарстан (Татарстан) — Казань", "kt": 1.7, "kt_tractor": 1.14, "plate": "16"}, {"id": "19.5", "region": "Республика Татарстан (Татарстан)", "place": "Набережные Челны", "label": "Республика Татарстан (Татарстан) — Набережные Челны", "kt": 1.56, "kt_tractor": 1.0, "plate": "16"}, {"id": "19.6", "region": "Республика Татарстан (Татарстан)", "place": "прочие города и населенные пункты", "label": "Республика Татарстан (Татарстан) — прочие города и населенные пункты", "kt": 1.08, "kt_tractor": 0.84, "plate": "16"}, {"id": "20.1", "region": "Республика Тыва", "place": "Кызыл", "label": "Республика Тыва — Кызыл", "kt": 0.9, "kt_tractor": 0.84, "plate": "17"}, {"id": "20.2", "region": "Республика Тыва", "place": "прочие города и населенные пункты", "label": "Республика Тыва — прочие города и населенные пункты", "kt": 0.9, "kt_tractor": 0.84, "plate": "17"}, {"id": "21.1", "region": "Удмуртская Республика", "place": "Воткинск", "label": "Удмуртская Республика — Воткинск", "kt": 1.08, "kt_tractor": 0.84, "plate": "18"}, {"id": "21.2", "region": "Удмуртская Республика", "place": "Глазов, Сарапул", "label": "Удмуртская Республика — Глазов, Сарапул", "kt": 1.0, "kt_tractor": 0.84, "plate": "18"}, {"id": "21.3", "region": "Удмуртская Республика", "place": "Ижевск", "label": "Удмуртская Республика — Ижевск", "kt": 1.48, "kt_tractor": 1.0, "plate": "18"}, {"id": "21.4", "region": "Удмуртская Республика", "place": "прочие города и населенные пункты", "label": "Удмуртская Республика — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.66, "plate": "18"}, {"id": "22.1", "region": "Республика Хакасия", "place": "Абакан, Саяногорск, Черногорск", "label": "Республика Хакасия — Абакан, Саяногорск, Черногорск", "kt": 1.0, "kt_tractor": 0.84, "plate": "19"}, {"id": "22.2", "region": "Республика Хакасия", "place": "прочие города и населенные пункты", "label": "Республика Хакасия — прочие города и населенные пункты", "kt": 0.82, "kt_tractor": 0.76, "plate": "19"}, {"id": "23", "region": "Чеченская Республика", "place": null, "label": "Чеченская Республика", "kt": 0.9, "kt_tractor": 0.84, "plate": "95"}, {"id": "24.1", "region": "Чувашская Республика - Чувашия", "place": "Канаш", "label": "Чувашская Республика - Чувашия — Канаш", "kt": 1.08, "kt_tractor": 0.84, "plate": "21"}, {"id": "24.2", "region": "Чувашская Республика - Чувашия", "place": "Новочебоксарск", "label": "Чувашская Республика - Чувашия — Новочебоксарск", "kt": 1.16, "kt_tractor": 0.84, "plate": "21"}, {"id": "24.3", "region": "Чувашская Республика - Чувашия", "place": "Чебоксары", "label": "Чувашская Республика - Чувашия — Чебоксары", "kt": 1.46, "kt_tractor": 1.0, "plate": "21"}, {"id": "24.4", "region": "Чувашская Республика - Чувашия", "place": "прочие города и населенные пункты", "label": "Чувашская Республика - Чувашия — прочие города и населенные пункты", "kt": 0.97, "kt_tractor": 0.77, "plate": "21"}, {"id": "25.1", "region": "Алтайский край", "place": "Барнаул", "label": "Алтайский край — Барнаул", "kt": 1.49, "kt_tractor": 1.0, "plate": "22"}, {"id": "25.2", "region": "Алтайский край", "place": "Бийск", "label": "Алтайский край — Бийск", "kt": 1.16, "kt_tractor": 0.84, "plate": "22"}, {"id": "25.3", "region": "Алтайский край", "place": "Заринск, Новоалтайск, Рубцовск", "label": "Алтайский край — Заринск, Новоалтайск, Рубцовск", "kt": 1.08, "kt_tractor": 0.84, "plate": "22"}, {"id": "25.4", "region": "Алтайский край", "place": "прочие города и населенные пункты", "label": "Алтайский край — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.66, "plate": "22"}, {"id": "26.1", "region": "Забайкальский край", "place": "Краснокаменск", "label": "Забайкальский край — Краснокаменск", "kt": 0.82, "kt_tractor": 0.76, "plate": "75"}, {"id": "26.2", "region": "Забайкальский край", "place": "Чита", "label": "Забайкальский край — Чита", "kt": 0.82, "kt_tractor": 0.7, "plate": "75"}, {"id": "26.3", "region": "Забайкальский край", "place": "прочие города и населенные пункты", "label": "Забайкальский край — прочие города и населенные пункты", "kt": 0.68, "kt_tractor": 0.6, "plate": "75"}, {"id": "27.1", "region": "Камчатский край", "place": "Петропавловск-Камчатский", "label": "Камчатский край — Петропавловск-Камчатский", "kt": 1.24, "kt_tractor": 1.0, "plate": "41"}, {"id": "27.2", "region": "Камчатский край", "place": "прочие города и населенные пункты", "label": "Камчатский край — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.68, "plate": "41"}, {"id": "28.1", "region": "Краснодарский край", "place": "Анапа, Геленджик", "label": "Краснодарский край — Анапа, Геленджик", "kt": 1.24, "kt_tractor": 0.84, "plate": "23"}, {"id": "28.2", "region": "Краснодарский край", "place": "Армавир, Сочи, Туапсе", "label": "Краснодарский край — Армавир, Сочи, Туапсе", "kt": 1.16, "kt_tractor": 0.84, "plate": "23"}, {"id": "28.3", "region": "Краснодарский край", "place": "Белореченск, Ейск, Кропоткин, Крымск, Курганинск, Лабинск, Славянск-на-Кубани, Тимашевск, Тихорецк", "label": "Краснодарский край — Белореченск, Ейск, Кропоткин, Крымск, Курганинск, Лабинск, Славянск-на-Кубани, Тимашевск, Тихорецк", "kt": 1.08, "kt_tractor": 0.84, "plate": "23"}, {"id": "28.4", "region": "Краснодарский край", "place": "Краснодар, Новороссийск", "label": "Краснодарский край — Краснодар, Новороссийск", "kt": 1.56, "kt_tractor": 1.0, "plate": "23"}, {"id": "28.5", "region": "Краснодарский край", "place": "прочие города и населенные пункты", "label": "Краснодарский край — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.84, "plate": "23"}, {"id": "29.1", "region": "Красноярский край", "place": "Ачинск, Зеленогорск", "label": "Красноярский край — Ачинск, Зеленогорск", "kt": 1.08, "kt_tractor": 0.84, "plate": "24"}, {"id": "29.2", "region": "Красноярский край", "place": "Железногорск, Норильск", "label": "Красноярский край — Железногорск, Норильск", "kt": 1.24, "kt_tractor": 0.84, "plate": "24"}, {"id": "29.3", "region": "Красноярский край", "place": "Канск, Лесосибирск, Минусинск, Назарово", "label": "Красноярский край — Канск, Лесосибирск, Минусинск, Назарово", "kt": 1.0, "kt_tractor": 0.84, "plate": "24"}, {"id": "29.4", "region": "Красноярский край", "place": "Красноярск", "label": "Красноярский край — Красноярск", "kt": 1.56, "kt_tractor": 1.0, "plate": "24"}, {"id": "29.5", "region": "Красноярский край", "place": "прочие города и населенные пункты", "label": "Красноярский край — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.66, "plate": "24"}, {"id": "30.1", "region": "Пермский край", "place": "Березники", "label": "Пермский край — Березники", "kt": 1.24, "kt_tractor": 0.84, "plate": "59"}, {"id": "30.2", "region": "Пермский край", "place": "Краснокамск", "label": "Пермский край — Краснокамск", "kt": 1.14, "kt_tractor": 0.84, "plate": "59"}, {"id": "30.3", "region": "Пермский край", "place": "Лысьва, Чайковский", "label": "Пермский край — Лысьва, Чайковский", "kt": 1.0, "kt_tractor": 0.84, "plate": "59"}, {"id": "30.4", "region": "Пермский край", "place": "Пермь", "label": "Пермский край — Пермь", "kt": 1.6, "kt_tractor": 1.04, "plate": "59"}, {"id": "30.5", "region": "Пермский край", "place": "Соликамск", "label": "Пермский край — Соликамск", "kt": 1.16, "kt_tractor": 0.84, "plate": "59"}, {"id": "30.6", "region": "Пермский край", "place": "прочие города и населенные пункты", "label": "Пермский край — прочие города и населенные пункты", "kt": 1.07, "kt_tractor": 0.84, "plate": "59"}, {"id": "31.1", "region": "Приморский край", "place": "Арсеньев, Артем, Находка, Спасск-Дальний, Уссурийск", "label": "Приморский край — Арсеньев, Артем, Находка, Спасск-Дальний, Уссурийск", "kt": 1.0, "kt_tractor": 0.88, "plate": "25"}, {"id": "31.2", "region": "Приморский край", "place": "Владивосток", "label": "Приморский край — Владивосток", "kt": 1.36, "kt_tractor": 1.0, "plate": "25"}, {"id": "31.3", "region": "Приморский край", "place": "прочие города и населенные пункты", "label": "Приморский край — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.84, "plate": "25"}, {"id": "32.1", "region": "Ставропольский край", "place": "Буденновск, Георгиевск, Ессентуки, Минеральные Воды, Невинномысск, Пятигорск", "label": "Ставропольский край — Буденновск, Георгиевск, Ессентуки, Минеральные Воды, Невинномысск, Пятигорск", "kt": 1.0, "kt_tractor": 0.84, "plate": "26"}, {"id": "32.2", "region": "Ставропольский край", "place": "Кисловодск, Михайловск, Ставрополь", "label": "Ставропольский край — Кисловодск, Михайловск, Ставрополь", "kt": 1.16, "kt_tractor": 0.84, "plate": "26"}, {"id": "32.3", "region": "Ставропольский край", "place": "прочие города и населенные пункты", "label": "Ставропольский край — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.66, "plate": "26"}, {"id": "33.1", "region": "Хабаровский край", "place": "Амурск", "label": "Хабаровский край — Амурск", "kt": 1.0, "kt_tractor": 0.84, "plate": "27"}, {"id": "33.2", "region": "Хабаровский край", "place": "Комсомольск-на-Амуре", "label": "Хабаровский край — Комсомольск-на-Амуре", "kt": 1.27, "kt_tractor": 0.88, "plate": "27"}, {"id": "33.3", "region": "Хабаровский край", "place": "Хабаровск", "label": "Хабаровский край — Хабаровск", "kt": 1.56, "kt_tractor": 1.0, "plate": "27"}, {"id": "33.4", "region": "Хабаровский край", "place": "прочие города и населенные пункты", "label": "Хабаровский край — прочие города и населенные пункты", "kt": 0.97, "kt_tractor": 0.77, "plate": "27"}, {"id": "34.1", "region": "Амурская область", "place": "Белогорск, Свободный", "label": "Амурская область — Белогорск, Свободный", "kt": 1.08, "kt_tractor": 0.92, "plate": "28"}, {"id": "34.2", "region": "Амурская область", "place": "Благовещенск", "label": "Амурская область — Благовещенск", "kt": 1.48, "kt_tractor": 0.92, "plate": "28"}, {"id": "34.3", "region": "Амурская область", "place": "прочие города и населенные пункты", "label": "Амурская область — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.68, "plate": "28"}, {"id": "35.1", "region": "Архангельская область", "place": "Архангельск", "label": "Архангельская область — Архангельск", "kt": 1.64, "kt_tractor": 1.0, "plate": "29"}, {"id": "35.2", "region": "Архангельская область", "place": "Котлас", "label": "Архангельская область — Котлас", "kt": 1.38, "kt_tractor": 1.0, "plate": "29"}, {"id": "35.3", "region": "Архангельская область", "place": "Северодвинск", "label": "Архангельская область — Северодвинск", "kt": 1.46, "kt_tractor": 1.0, "plate": "29"}, {"id": "35.4", "region": "Архангельская область", "place": "прочие города и населенные пункты", "label": "Архангельская область — прочие города и населенные пункты", "kt": 0.88, "kt_tractor": 0.6, "plate": "29"}, {"id": "36.1", "region": "Астраханская область", "place": "Астрахань", "label": "Астраханская область — Астрахань", "kt": 1.32, "kt_tractor": 1.0, "plate": "30"}, {"id": "36.2", "region": "Астраханская область", "place": "прочие города и населенные пункты", "label": "Астраханская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.6, "plate": "30"}, {"id": "37.1", "region": "Белгородская область", "place": "Белгород", "label": "Белгородская область — Белгород", "kt": 1.24, "kt_tractor": 0.84, "plate": "31"}, {"id": "37.2", "region": "Белгородская область", "place": "Губкин, Старый Оскол", "label": "Белгородская область — Губкин, Старый Оскол", "kt": 1.0, "kt_tractor": 0.88, "plate": "31"}, {"id": "37.3", "region": "Белгородская область", "place": "прочие города и населенные пункты", "label": "Белгородская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.6, "plate": "31"}, {"id": "38.1", "region": "Брянская область", "place": "Брянск", "label": "Брянская область — Брянск", "kt": 1.4, "kt_tractor": 1.0, "plate": "32"}, {"id": "38.2", "region": "Брянская область", "place": "Клинцы", "label": "Брянская область — Клинцы", "kt": 1.0, "kt_tractor": 0.84, "plate": "32"}, {"id": "38.3", "region": "Брянская область", "place": "прочие города и населенные пункты", "label": "Брянская область — прочие города и населенные пункты", "kt": 0.76, "kt_tractor": 0.6, "plate": "32"}, {"id": "39.1", "region": "Владимирская область", "place": "Владимир", "label": "Владимирская область — Владимир", "kt": 1.38, "kt_tractor": 1.0, "plate": "33"}, {"id": "39.2", "region": "Владимирская область", "place": "Гусь-Хрустальный", "label": "Владимирская область — Гусь-Хрустальный", "kt": 1.08, "kt_tractor": 0.84, "plate": "33"}, {"id": "39.3", "region": "Владимирская область", "place": "Муром", "label": "Владимирская область — Муром", "kt": 1.16, "kt_tractor": 0.84, "plate": "33"}, {"id": "39.4", "region": "Владимирская область", "place": "прочие города и населенные пункты", "label": "Владимирская область — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.84, "plate": "33"}, {"id": "40.1", "region": "Волгоградская область", "place": "Волгоград", "label": "Волгоградская область — Волгоград", "kt": 1.21, "kt_tractor": 0.84, "plate": "34"}, {"id": "40.2", "region": "Волгоградская область", "place": "Волжский", "label": "Волгоградская область — Волжский", "kt": 1.08, "kt_tractor": 0.84, "plate": "34"}, {"id": "40.3", "region": "Волгоградская область", "place": "Камышин, Михайловка", "label": "Волгоградская область — Камышин, Михайловка", "kt": 1.0, "kt_tractor": 0.84, "plate": "34"}, {"id": "40.4", "region": "Волгоградская область", "place": "прочие города и населенные пункты", "label": "Волгоградская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.66, "plate": "34"}, {"id": "41.1", "region": "Вологодская область", "place": "Вологда", "label": "Вологодская область — Вологда", "kt": 1.46, "kt_tractor": 1.0, "plate": "35"}, {"id": "41.2", "region": "Вологодская область", "place": "Череповец", "label": "Вологодская область — Череповец", "kt": 1.54, "kt_tractor": 1.0, "plate": "35"}, {"id": "41.3", "region": "Вологодская область", "place": "прочие города и населенные пункты", "label": "Вологодская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.6, "plate": "35"}, {"id": "42.1", "region": "Воронежская область", "place": "Борисоглебск, Лиски, Россошь", "label": "Воронежская область — Борисоглебск, Лиски, Россошь", "kt": 1.08, "kt_tractor": 0.92, "plate": "36"}, {"id": "42.2", "region": "Воронежская область", "place": "Воронеж", "label": "Воронежская область — Воронеж", "kt": 1.35, "kt_tractor": 1.07, "plate": "36"}, {"id": "42.3", "region": "Воронежская область", "place": "прочие города и населенные пункты", "label": "Воронежская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.68, "plate": "36"}, {"id": "43", "region": "Запорожская область", "place": null, "label": "Запорожская область", "kt": 0.68, "kt_tractor": 0.68, "plate": "85"}, {"id": "44.1", "region": "Ивановская область", "place": "Иваново", "label": "Ивановская область — Иваново", "kt": 1.54, "kt_tractor": 1.0, "plate": "37"}, {"id": "44.2", "region": "Ивановская область", "place": "Кинешма", "label": "Ивановская область — Кинешма", "kt": 1.08, "kt_tractor": 0.84, "plate": "37"}, {"id": "44.3", "region": "Ивановская область", "place": "Шуя", "label": "Ивановская область — Шуя", "kt": 1.0, "kt_tractor": 0.84, "plate": "37"}, {"id": "44.4", "region": "Ивановская область", "place": "прочие города и населенные пункты", "label": "Ивановская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.6, "plate": "37"}, {"id": "45.1", "region": "Иркутская область", "place": "Ангарск", "label": "Иркутская область — Ангарск", "kt": 1.16, "kt_tractor": 0.84, "plate": "38"}, {"id": "45.2", "region": "Иркутская область", "place": "Братск, Тулун, Усть-Илимск, Усть-Кут, Черемхово", "label": "Иркутская область — Братск, Тулун, Усть-Илимск, Усть-Кут, Черемхово", "kt": 1.0, "kt_tractor": 0.84, "plate": "38"}, {"id": "45.3", "region": "Иркутская область", "place": "Иркутск", "label": "Иркутская область — Иркутск", "kt": 1.49, "kt_tractor": 1.0, "plate": "38"}, {"id": "45.4", "region": "Иркутская область", "place": "Усолье-Сибирское", "label": "Иркутская область — Усолье-Сибирское", "kt": 1.08, "kt_tractor": 0.84, "plate": "38"}, {"id": "45.5", "region": "Иркутская область", "place": "Шелехов", "label": "Иркутская область — Шелехов", "kt": 1.24, "kt_tractor": 0.84, "plate": "38"}, {"id": "45.6", "region": "Иркутская область", "place": "прочие города и населенные пункты", "label": "Иркутская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.66, "plate": "38"}, {"id": "46.1", "region": "Калининградская область", "place": "Калининград", "label": "Калининградская область — Калининград", "kt": 1.08, "kt_tractor": 0.84, "plate": "39"}, {"id": "46.2", "region": "Калининградская область", "place": "прочие города и населенные пункты", "label": "Калининградская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.66, "plate": "39"}, {"id": "47.1", "region": "Калужская область", "place": "Калуга", "label": "Калужская область — Калуга", "kt": 1.16, "kt_tractor": 0.84, "plate": "40"}, {"id": "47.2", "region": "Калужская область", "place": "Обнинск", "label": "Калужская область — Обнинск", "kt": 1.24, "kt_tractor": 0.84, "plate": "40"}, {"id": "47.3", "region": "Калужская область", "place": "прочие города и населенные пункты", "label": "Калужская область — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.66, "plate": "40"}, {"id": "48.1", "region": "Кемеровская область - Кузбасс", "place": "Анжеро-Судженск, Киселевск, Юрга", "label": "Кемеровская область - Кузбасс — Анжеро-Судженск, Киселевск, Юрга", "kt": 1.16, "kt_tractor": 0.84, "plate": "42"}, {"id": "48.2", "region": "Кемеровская область - Кузбасс", "place": "Белово, Березовский, Междуреченск, Осинники, Прокопьевск", "label": "Кемеровская область - Кузбасс — Белово, Березовский, Междуреченск, Осинники, Прокопьевск", "kt": 1.24, "kt_tractor": 0.84, "plate": "42"}, {"id": "48.3", "region": "Кемеровская область - Кузбасс", "place": "Кемерово", "label": "Кемеровская область - Кузбасс — Кемерово", "kt": 1.62, "kt_tractor": 1.0, "plate": "42"}, {"id": "48.4", "region": "Кемеровская область - Кузбасс", "place": "Новокузнецк", "label": "Кемеровская область - Кузбасс — Новокузнецк", "kt": 1.64, "kt_tractor": 1.0, "plate": "42"}, {"id": "48.5", "region": "Кемеровская область - Кузбасс", "place": "прочие города и населенные пункты", "label": "Кемеровская область - Кузбасс — прочие города и населенные пункты", "kt": 1.07, "kt_tractor": 0.84, "plate": "42"}, {"id": "49.1", "region": "Кировская область", "place": "Киров", "label": "Кировская область — Киров", "kt": 1.32, "kt_tractor": 1.0, "plate": "43"}, {"id": "49.2", "region": "Кировская область", "place": "Кирово-Чепецк", "label": "Кировская область — Кирово-Чепецк", "kt": 1.16, "kt_tractor": 0.84, "plate": "43"}, {"id": "49.3", "region": "Кировская область", "place": "прочие города и населенные пункты", "label": "Кировская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.6, "plate": "43"}, {"id": "50.1", "region": "Костромская область", "place": "Кострома", "label": "Костромская область — Кострома", "kt": 1.24, "kt_tractor": 0.84, "plate": "44"}, {"id": "50.2", "region": "Костромская область", "place": "прочие города и населенные пункты", "label": "Костромская область — прочие города и населенные пункты", "kt": 0.76, "kt_tractor": 0.6, "plate": "44"}, {"id": "51.1", "region": "Курганская область", "place": "Курган", "label": "Курганская область — Курган", "kt": 1.32, "kt_tractor": 0.84, "plate": "45"}, {"id": "51.2", "region": "Курганская область", "place": "Шадринск", "label": "Курганская область — Шадринск", "kt": 1.08, "kt_tractor": 0.84, "plate": "45"}, {"id": "51.3", "region": "Курганская область", "place": "прочие города и населенные пункты", "label": "Курганская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.77, "plate": "45"}, {"id": "52.1", "region": "Курская область", "place": "Железногорск", "label": "Курская область — Железногорск", "kt": 1.0, "kt_tractor": 0.84, "plate": "46"}, {"id": "52.2", "region": "Курская область", "place": "Курск", "label": "Курская область — Курск", "kt": 1.16, "kt_tractor": 0.84, "plate": "46"}, {"id": "52.3", "region": "Курская область", "place": "прочие города и населенные пункты", "label": "Курская область — прочие города и населенные пункты", "kt": 0.76, "kt_tractor": 0.6, "plate": "46"}, {"id": "53", "region": "Ленинградская область", "place": null, "label": "Ленинградская область", "kt": 1.24, "kt_tractor": 0.84, "plate": "47"}, {"id": "54.1", "region": "Липецкая область", "place": "Елец", "label": "Липецкая область — Елец", "kt": 1.0, "kt_tractor": 0.84, "plate": "48"}, {"id": "54.2", "region": "Липецкая область", "place": "Липецк", "label": "Липецкая область — Липецк", "kt": 1.4, "kt_tractor": 1.0, "plate": "48"}, {"id": "54.3", "region": "Липецкая область", "place": "прочие города и населенные пункты", "label": "Липецкая область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.66, "plate": "48"}, {"id": "55.1", "region": "Магаданская область", "place": "Магадан", "label": "Магаданская область — Магадан", "kt": 0.9, "kt_tractor": 0.77, "plate": "49"}, {"id": "55.2", "region": "Магаданская область", "place": "прочие города и населенные пункты", "label": "Магаданская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.77, "plate": "49"}, {"id": "56", "region": "Московская область", "place": null, "label": "Московская область", "kt": 1.56, "kt_tractor": 1.0, "plate": "50"}, {"id": "57.1", "region": "Мурманская область", "place": "Апатиты", "label": "Мурманская область — Апатиты", "kt": 1.24, "kt_tractor": 1.0, "plate": "51"}, {"id": "57.2", "region": "Мурманская область", "place": "Мончегорск", "label": "Мурманская область — Мончегорск", "kt": 1.14, "kt_tractor": 1.0, "plate": "51"}, {"id": "57.3", "region": "Мурманская область", "place": "Мурманск", "label": "Мурманская область — Мурманск", "kt": 1.78, "kt_tractor": 1.06, "plate": "51"}, {"id": "57.4", "region": "Мурманская область", "place": "Североморск", "label": "Мурманская область — Североморск", "kt": 1.48, "kt_tractor": 1.0, "plate": "51"}, {"id": "57.5", "region": "Мурманская область", "place": "прочие города и населенные пункты", "label": "Мурманская область — прочие города и населенные пункты", "kt": 1.16, "kt_tractor": 1.0, "plate": "51"}, {"id": "58.1", "region": "Нижегородская область", "place": "Арзамас, Выкса, Саров", "label": "Нижегородская область — Арзамас, Выкса, Саров", "kt": 1.08, "kt_tractor": 0.84, "plate": "52"}, {"id": "58.2", "region": "Нижегородская область", "place": "Балахна, Бор, Дзержинск", "label": "Нижегородская область — Балахна, Бор, Дзержинск", "kt": 1.24, "kt_tractor": 0.84, "plate": "52"}, {"id": "58.3", "region": "Нижегородская область", "place": "Кстово", "label": "Нижегородская область — Кстово", "kt": 1.16, "kt_tractor": 0.84, "plate": "52"}, {"id": "58.4", "region": "Нижегородская область", "place": "Нижний Новгород", "label": "Нижегородская область — Нижний Новгород", "kt": 1.56, "kt_tractor": 1.0, "plate": "52"}, {"id": "58.5", "region": "Нижегородская область", "place": "прочие города и населенные пункты", "label": "Нижегородская область — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.84, "plate": "52"}, {"id": "59.1", "region": "Новгородская область", "place": "Боровичи", "label": "Новгородская область — Боровичи", "kt": 1.0, "kt_tractor": 0.84, "plate": "53"}, {"id": "59.2", "region": "Новгородская область", "place": "Великий Новгород", "label": "Новгородская область — Великий Новгород", "kt": 1.24, "kt_tractor": 0.84, "plate": "53"}, {"id": "59.3", "region": "Новгородская область", "place": "прочие города и населенные пункты", "label": "Новгородская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.6, "plate": "53"}, {"id": "60.1", "region": "Новосибирская область", "place": "Бердск", "label": "Новосибирская область — Бердск", "kt": 2.48, "kt_tractor": 1.68, "plate": "54"}, {"id": "60.2", "region": "Новосибирская область", "place": "Искитим", "label": "Новосибирская область — Искитим", "kt": 2.32, "kt_tractor": 1.68, "plate": "54"}, {"id": "60.3", "region": "Новосибирская область", "place": "Куйбышев", "label": "Новосибирская область — Куйбышев", "kt": 2.0, "kt_tractor": 1.68, "plate": "54"}, {"id": "60.4", "region": "Новосибирская область", "place": "Новосибирск", "label": "Новосибирская область — Новосибирск", "kt": 3.12, "kt_tractor": 2.0, "plate": "54"}, {"id": "60.5", "region": "Новосибирская область", "place": "прочие города и населенные пункты", "label": "Новосибирская область — прочие города и населенные пункты", "kt": 2.0, "kt_tractor": 1.52, "plate": "54"}, {"id": "61.1", "region": "Омская область", "place": "Омск", "label": "Омская область — Омск", "kt": 1.42, "kt_tractor": 1.0, "plate": "55"}, {"id": "61.2", "region": "Омская область", "place": "прочие города и населенные пункты", "label": "Омская область — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.66, "plate": "55"}, {"id": "62.1", "region": "Оренбургская область", "place": "Бугуруслан, Бузулук, Новотроицк", "label": "Оренбургская область — Бугуруслан, Бузулук, Новотроицк", "kt": 1.0, "kt_tractor": 0.84, "plate": "56"}, {"id": "62.2", "region": "Оренбургская область", "place": "Оренбург", "label": "Оренбургская область — Оренбург", "kt": 1.56, "kt_tractor": 1.0, "plate": "56"}, {"id": "62.3", "region": "Оренбургская область", "place": "Орск", "label": "Оренбургская область — Орск", "kt": 1.08, "kt_tractor": 0.84, "plate": "56"}, {"id": "62.4", "region": "Оренбургская область", "place": "прочие города и населенные пункты", "label": "Оренбургская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.66, "plate": "56"}, {"id": "63.1", "region": "Орловская область", "place": "Ливны, Мценск", "label": "Орловская область — Ливны, Мценск", "kt": 1.0, "kt_tractor": 0.84, "plate": "57"}, {"id": "63.2", "region": "Орловская область", "place": "Орел", "label": "Орловская область — Орел", "kt": 1.16, "kt_tractor": 0.84, "plate": "57"}, {"id": "63.3", "region": "Орловская область", "place": "прочие города и населенные пункты", "label": "Орловская область — прочие города и населенные пункты", "kt": 0.76, "kt_tractor": 0.6, "plate": "57"}, {"id": "64.1", "region": "Пензенская область", "place": "Заречный", "label": "Пензенская область — Заречный", "kt": 1.16, "kt_tractor": 0.84, "plate": "58"}, {"id": "64.2", "region": "Пензенская область", "place": "Кузнецк", "label": "Пензенская область — Кузнецк", "kt": 1.0, "kt_tractor": 0.84, "plate": "58"}, {"id": "64.3", "region": "Пензенская область", "place": "Пенза", "label": "Пензенская область — Пенза", "kt": 1.32, "kt_tractor": 1.0, "plate": "58"}, {"id": "64.4", "region": "Пензенская область", "place": "прочие города и населенные пункты", "label": "Пензенская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.66, "plate": "58"}, {"id": "65.1", "region": "Псковская область", "place": "Великие Луки", "label": "Псковская область — Великие Луки", "kt": 1.0, "kt_tractor": 0.84, "plate": "60"}, {"id": "65.2", "region": "Псковская область", "place": "Псков", "label": "Псковская область — Псков", "kt": 1.16, "kt_tractor": 0.84, "plate": "60"}, {"id": "65.3", "region": "Псковская область", "place": "прочие города и населенные пункты", "label": "Псковская область — прочие города и населенные пункты", "kt": 0.76, "kt_tractor": 0.6, "plate": "60"}, {"id": "66.1", "region": "Ростовская область", "place": "Азов", "label": "Ростовская область — Азов", "kt": 1.16, "kt_tractor": 0.84, "plate": "61"}, {"id": "66.2", "region": "Ростовская область", "place": "Батайск", "label": "Ростовская область — Батайск", "kt": 1.24, "kt_tractor": 0.84, "plate": "61"}, {"id": "66.3", "region": "Ростовская область", "place": "Волгодонск, Гуково, Каменск-Шахтинский, Новочеркасск, Новошахтинск, Сальск, Таганрог", "label": "Ростовская область — Волгодонск, Гуково, Каменск-Шахтинский, Новочеркасск, Новошахтинск, Сальск, Таганрог", "kt": 1.0, "kt_tractor": 0.84, "plate": "61"}, {"id": "66.4", "region": "Ростовская область", "place": "Ростов-на-Дону", "label": "Ростовская область — Ростов-на-Дону", "kt": 1.56, "kt_tractor": 1.0, "plate": "61"}, {"id": "66.5", "region": "Ростовская область", "place": "Шахты", "label": "Ростовская область — Шахты", "kt": 1.08, "kt_tractor": 0.84, "plate": "61"}, {"id": "66.6", "region": "Ростовская область", "place": "прочие города и населенные пункты", "label": "Ростовская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.6, "plate": "61"}, {"id": "67.1", "region": "Рязанская область", "place": "Рязань", "label": "Рязанская область — Рязань", "kt": 1.32, "kt_tractor": 1.0, "plate": "62"}, {"id": "67.2", "region": "Рязанская область", "place": "прочие города и населенные пункты", "label": "Рязанская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.6, "plate": "62"}, {"id": "68.1", "region": "Самарская область", "place": "Новокуйбышевск, Сызрань", "label": "Самарская область — Новокуйбышевск, Сызрань", "kt": 1.08, "kt_tractor": 0.84, "plate": "63"}, {"id": "68.2", "region": "Самарская область", "place": "Самара", "label": "Самарская область — Самара", "kt": 1.48, "kt_tractor": 1.0, "plate": "63"}, {"id": "68.3", "region": "Самарская область", "place": "Тольятти", "label": "Самарская область — Тольятти", "kt": 1.35, "kt_tractor": 1.0, "plate": "63"}, {"id": "68.4", "region": "Самарская область", "place": "Чапаевск", "label": "Самарская область — Чапаевск", "kt": 1.16, "kt_tractor": 0.84, "plate": "63"}, {"id": "68.5", "region": "Самарская область", "place": "прочие города и населенные пункты", "label": "Самарская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.6, "plate": "63"}, {"id": "69.1", "region": "Саратовская область", "place": "Балаково, Балашов, Вольск", "label": "Саратовская область — Балаково, Балашов, Вольск", "kt": 1.0, "kt_tractor": 0.84, "plate": "64"}, {"id": "69.2", "region": "Саратовская область", "place": "Саратов", "label": "Саратовская область — Саратов", "kt": 1.42, "kt_tractor": 1.0, "plate": "64"}, {"id": "69.3", "region": "Саратовская область", "place": "Энгельс", "label": "Саратовская область — Энгельс", "kt": 1.16, "kt_tractor": 0.84, "plate": "64"}, {"id": "69.4", "region": "Саратовская область", "place": "прочие города и населенные пункты", "label": "Саратовская область — прочие города и населенные пункты", "kt": 0.76, "kt_tractor": 0.6, "plate": "64"}, {"id": "70.1", "region": "Сахалинская область", "place": "Южно-Сахалинск", "label": "Сахалинская область — Южно-Сахалинск", "kt": 1.4, "kt_tractor": 1.0, "plate": "65"}, {"id": "70.2", "region": "Сахалинская область", "place": "прочие города и населенные пункты", "label": "Сахалинская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.6, "plate": "65"}, {"id": "71.1", "region": "Свердловская область", "place": "Асбест, Ревда", "label": "Свердловская область — Асбест, Ревда", "kt": 1.08, "kt_tractor": 0.84, "plate": "66"}, {"id": "71.2", "region": "Свердловская область", "place": "Березовский, Верхняя Пышма, Первоуральск", "label": "Свердловская область — Березовский, Верхняя Пышма, Первоуральск", "kt": 1.24, "kt_tractor": 0.84, "plate": "66"}, {"id": "71.3", "region": "Свердловская область", "place": "Верхняя Салда", "label": "Свердловская область — Верхняя Салда", "kt": 1.06, "kt_tractor": 0.84, "plate": "66"}, {"id": "71.4", "region": "Свердловская область", "place": "Екатеринбург", "label": "Свердловская область — Екатеринбург", "kt": 1.64, "kt_tractor": 1.0, "plate": "66"}, {"id": "71.5", "region": "Свердловская область", "place": "Новоуральск", "label": "Свердловская область — Новоуральск", "kt": 1.14, "kt_tractor": 0.84, "plate": "66"}, {"id": "71.6", "region": "Свердловская область", "place": "Полевской", "label": "Свердловская область — Полевской", "kt": 1.16, "kt_tractor": 0.84, "plate": "66"}, {"id": "71.7", "region": "Свердловская область", "place": "прочие города и населенные пункты", "label": "Свердловская область — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.84, "plate": "66"}, {"id": "72.1", "region": "Смоленская область", "place": "Вязьма, Рославль, Сафоново, Ярцево", "label": "Смоленская область — Вязьма, Рославль, Сафоново, Ярцево", "kt": 1.0, "kt_tractor": 0.84, "plate": "67"}, {"id": "72.2", "region": "Смоленская область", "place": "Смоленск", "label": "Смоленская область — Смоленск", "kt": 1.16, "kt_tractor": 0.84, "plate": "67"}, {"id": "72.3", "region": "Смоленская область", "place": "прочие города и населенные пункты", "label": "Смоленская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.66, "plate": "67"}, {"id": "73.1", "region": "Тамбовская область", "place": "Мичуринск", "label": "Тамбовская область — Мичуринск", "kt": 1.0, "kt_tractor": 0.84, "plate": "68"}, {"id": "73.2", "region": "Тамбовская область", "place": "Тамбов", "label": "Тамбовская область — Тамбов", "kt": 1.16, "kt_tractor": 0.84, "plate": "68"}, {"id": "73.3", "region": "Тамбовская область", "place": "прочие города и населенные пункты", "label": "Тамбовская область — прочие города и населенные пункты", "kt": 0.84, "kt_tractor": 0.6, "plate": "68"}, {"id": "74.1", "region": "Тверская область", "place": "Вышний Волочек, Кимры, Ржев", "label": "Тверская область — Вышний Волочек, Кимры, Ржев", "kt": 1.0, "kt_tractor": 0.84, "plate": "69"}, {"id": "74.2", "region": "Тверская область", "place": "Тверь", "label": "Тверская область — Тверь", "kt": 1.4, "kt_tractor": 1.0, "plate": "69"}, {"id": "74.3", "region": "Тверская область", "place": "прочие города и населенные пункты", "label": "Тверская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.66, "plate": "69"}, {"id": "75.1", "region": "Томская область", "place": "Северск", "label": "Томская область — Северск", "kt": 1.16, "kt_tractor": 0.84, "plate": "70"}, {"id": "75.2", "region": "Томская область", "place": "Томск", "label": "Томская область — Томск", "kt": 1.48, "kt_tractor": 1.0, "plate": "70"}, {"id": "75.3", "region": "Томская область", "place": "прочие города и населенные пункты", "label": "Томская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.6, "plate": "70"}, {"id": "76.1", "region": "Тульская область", "place": "Алексин, Ефремов, Новомосковск", "label": "Тульская область — Алексин, Ефремов, Новомосковск", "kt": 1.0, "kt_tractor": 0.84, "plate": "71"}, {"id": "76.2", "region": "Тульская область", "place": "Тула", "label": "Тульская область — Тула", "kt": 1.4, "kt_tractor": 1.0, "plate": "71"}, {"id": "76.3", "region": "Тульская область", "place": "Узловая, Щекино", "label": "Тульская область — Узловая, Щекино", "kt": 1.16, "kt_tractor": 0.84, "plate": "71"}, {"id": "76.4", "region": "Тульская область", "place": "прочие города и населенные пункты", "label": "Тульская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.6, "plate": "71"}, {"id": "77.1", "region": "Тюменская область", "place": "Тобольск", "label": "Тюменская область — Тобольск", "kt": 1.24, "kt_tractor": 0.84, "plate": "72"}, {"id": "77.2", "region": "Тюменская область", "place": "Тюмень", "label": "Тюменская область — Тюмень", "kt": 1.6, "kt_tractor": 1.04, "plate": "72"}, {"id": "77.3", "region": "Тюменская область", "place": "прочие города и населенные пункты", "label": "Тюменская область — прочие города и населенные пункты", "kt": 1.07, "kt_tractor": 0.84, "plate": "72"}, {"id": "78.1", "region": "Ульяновская область", "place": "Димитровград", "label": "Ульяновская область — Димитровград", "kt": 1.16, "kt_tractor": 0.92, "plate": "73"}, {"id": "78.2", "region": "Ульяновская область", "place": "Ульяновск", "label": "Ульяновская область — Ульяновск", "kt": 1.4, "kt_tractor": 1.08, "plate": "73"}, {"id": "78.3", "region": "Ульяновская область", "place": "прочие города и населенные пункты", "label": "Ульяновская область — прочие города и населенные пункты", "kt": 0.92, "kt_tractor": 0.68, "plate": "73"}, {"id": "79", "region": "Херсонская область", "place": null, "label": "Херсонская область", "kt": 0.68, "kt_tractor": 0.68, "plate": "84"}, {"id": "80.1", "region": "Челябинская область", "place": "Златоуст, Миасс", "label": "Челябинская область — Златоуст, Миасс", "kt": 1.32, "kt_tractor": 0.84, "plate": "74"}, {"id": "80.2", "region": "Челябинская область", "place": "Копейск", "label": "Челябинская область — Копейск", "kt": 1.48, "kt_tractor": 1.0, "plate": "74"}, {"id": "80.3", "region": "Челябинская область", "place": "Магнитогорск", "label": "Челябинская область — Магнитогорск", "kt": 1.64, "kt_tractor": 1.0, "plate": "74"}, {"id": "80.4", "region": "Челябинская область", "place": "Сатка, Чебаркуль", "label": "Челябинская область — Сатка, Чебаркуль", "kt": 1.16, "kt_tractor": 0.84, "plate": "74"}, {"id": "80.5", "region": "Челябинская область", "place": "Челябинск", "label": "Челябинская область — Челябинск", "kt": 1.77, "kt_tractor": 1.21, "plate": "74"}, {"id": "80.6", "region": "Челябинская область", "place": "прочие города и населенные пункты", "label": "Челябинская область — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.84, "plate": "74"}, {"id": "81.1", "region": "Ярославская область", "place": "Ярославль", "label": "Ярославская область — Ярославль", "kt": 1.4, "kt_tractor": 1.0, "plate": "76"}, {"id": "81.2", "region": "Ярославская область", "place": "прочие города и населенные пункты", "label": "Ярославская область — прочие города и населенные пункты", "kt": 1.0, "kt_tractor": 0.66, "plate": "76"}, {"id": "82", "region": "Москва", "place": null, "label": "Москва", "kt": 1.8, "kt_tractor": 1.16, "plate": "77"}, {"id": "83", "region": "Санкт-Петербург", "place": null, "label": "Санкт-Петербург", "kt": 1.64, "kt_tractor": 1.0, "plate": "78"}, {"id": "84", "region": "Севастополь", "place": null, "label": "Севастополь", "kt": 0.82, "kt_tractor": 0.82, "plate": "92"}, {"id": "85.1", "region": "Еврейская автономная область", "place": "Биробиджан", "label": "Еврейская автономная область — Биробиджан", "kt": 0.9, "kt_tractor": 0.84, "plate": "79"}, {"id": "85.2", "region": "Еврейская автономная область", "place": "прочие города и населенные пункты", "label": "Еврейская автономная область — прочие города и населенные пункты", "kt": 0.9, "kt_tractor": 0.84, "plate": "79"}, {"id": "86", "region": "Ненецкий автономный округ", "place": null, "label": "Ненецкий автономный округ", "kt": 0.84, "kt_tractor": 0.6, "plate": "83"}, {"id": "87.1", "region": "Ханты-Мансийский автономный округ - Югра", "place": "Когалым", "label": "Ханты-Мансийский автономный округ - Югра — Когалым", "kt": 1.0, "kt_tractor": 0.84, "plate": "86"}, {"id": "87.2", "region": "Ханты-Мансийский автономный округ - Югра", "place": "Нефтеюганск, Нягань", "label": "Ханты-Мансийский автономный округ - Югра — Нефтеюганск, Нягань", "kt": 1.24, "kt_tractor": 0.84, "plate": "86"}, {"id": "87.3", "region": "Ханты-Мансийский автономный округ - Югра", "place": "Сургут", "label": "Ханты-Мансийский автономный округ - Югра — Сургут", "kt": 1.7, "kt_tractor": 1.06, "plate": "86"}, {"id": "87.4", "region": "Ханты-Мансийский автономный округ - Югра", "place": "Нижневартовск", "label": "Ханты-Мансийский автономный округ - Югра — Нижневартовск", "kt": 1.64, "kt_tractor": 1.0, "plate": "86"}, {"id": "87.5", "region": "Ханты-Мансийский автономный округ - Югра", "place": "Ханты-Мансийск", "label": "Ханты-Мансийский автономный округ - Югра — Ханты-Мансийск", "kt": 1.3, "kt_tractor": 1.0, "plate": "86"}, {"id": "87.6", "region": "Ханты-Мансийский автономный округ - Югра", "place": "прочие города и населенные пункты", "label": "Ханты-Мансийский автономный округ - Югра — прочие города и населенные пункты", "kt": 1.07, "kt_tractor": 0.84, "plate": "86"}, {"id": "88", "region": "Чукотский автономный округ", "place": null, "label": "Чукотский автономный округ", "kt": 0.76, "kt_tractor": 0.7, "plate": "87"}, {"id": "89.1", "region": "Ямало-Ненецкий автономный округ", "place": "Новый Уренгой", "label": "Ямало-Ненецкий автономный округ — Новый Уренгой", "kt": 1.0, "kt_tractor": 0.84, "plate": "89"}, {"id": "89.2", "region": "Ямало-Ненецкий автономный округ", "place": "Ноябрьск", "label": "Ямало-Ненецкий автономный округ — Ноябрьск", "kt": 1.46, "kt_tractor": 1.0, "plate": "89"}, {"id": "89.3", "region": "Ямало-Ненецкий автономный округ", "place": "прочие города и населенные пункты", "label": "Ямало-Ненецкий автономный округ — прочие города и населенные пункты", "kt": 1.08, "kt_tractor": 0.84, "plate": "89"}, {"id": "90", "region": "Байконур", "place": null, "label": "Байконур", "kt": 0.82, "kt_tractor": 0.76, "plate": "94"}], "kt_default_id": "8.1", "kt_source": "Указание Банка России от 09.10.2025 № 7204-У, приложение 2 (актуальная редакция КТ с 01.01.2026)"};
+const PUBLIC_MODE = true;
+  let tariffs = null;
+  let driverN = 0;
+  let selectedTbId = "B_phys";
+  let selectedKtId = "8.1";
+  let selectedKtValue = 1;
+  let tbMin = 1399;
+  let tbMax = 8665;
+  let syncingTb = false;
+  let syncingPower = false;
+  let calcTimer = null;
+  let refundTimer = null;
+  let endorseTimer = null;
+  let lastCalc = null;
+  const HP_TO_KW = 0.73549875;
+
+  function fmtCell(v) {
+    if (v == null || Number.isNaN(Number(v))) return "—";
+    const n = Number(v);
+    return String(n).replace(".", ",");
+  }
+
+  function heatStyle(v, lo, hi) {
+    if (v == null || Number.isNaN(Number(v))) return "";
+    const x = Number(v);
+    const t = hi === lo ? 0.5 : Math.max(0, Math.min(1, (x - lo) / (hi - lo)));
+    // low → green, mid → amber, high → terracotta (не фиолетовый)
+    let r, g, b;
+    if (t < 0.5) {
+      const u = t * 2;
+      r = Math.round(47 + (201 - 47) * u);
+      g = Math.round(143 + (162 - 143) * u);
+      b = Math.round(107 + (39 - 107) * u);
+    } else {
+      const u = (t - 0.5) * 2;
+      r = Math.round(201 + (196 - 201) * u);
+      g = Math.round(162 + (92 - 162) * u);
+      b = Math.round(39 + (62 - 39) * u);
+    }
+    const ink = t > 0.55 || t < 0.2 ? "#f4f7fb" : "#121a24";
+    return `background:rgba(${r},${g},${b},0.88);color:${ink}`;
+  }
+
+  function ageLabels(mins) {
+    const out = [];
+    for (let i = 0; i < mins.length; i++) {
+      const a = mins[i];
+      const b = mins[i + 1];
+      if (b == null) out.push(`старше ${a - 1}`);
+      else if (i === 0) out.push(`${a}–${b - 1}`);
+      else out.push(`${a}–${b - 1}`);
+    }
+    return out;
+  }
+
+  function expLabels(mins) {
+    const names = [];
+    for (let i = 0; i < mins.length; i++) {
+      const a = mins[i];
+      const b = mins[i + 1];
+      if (b == null) names.push(`${a}+`);
+      else if (b - a === 1) names.push(String(a));
+      else names.push(`${a}–${b - 1}`);
+    }
+    return names;
+  }
+
+  function renderKvsTable(box, title, sub, table, ageMins, expMins) {
+    const ages = ageLabels(ageMins);
+    const exps = expLabels(expMins);
+    const vals = table.flat().filter((v) => v != null).map(Number);
+    const lo = Math.min(...vals);
+    const hi = Math.max(...vals);
+    let html = `<h3>${title}</h3><p class="ref-sub">${sub}</p><table class="ref-table"><thead><tr><th>Возраст \\ стаж</th>`;
+    for (const e of exps) html += `<th>${e}</th>`;
+    html += `</tr></thead><tbody>`;
+    table.forEach((row, ri) => {
+      html += `<tr><td>${ages[ri] || ""}</td>`;
+      row.forEach((v) => {
+        if (v == null) html += `<td class="dash">—</td>`;
+        else html += `<td class="heat" style="${heatStyle(v, lo, hi)}">${fmtCell(v)}</td>`;
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+    box.innerHTML = html;
+  }
+
+  function renderRefTables() {
+    if (!tariffs) return;
+    const kbmBox = el("refKbm");
+    const kmBox = el("refKm");
+    const ksBox = el("refKs");
+    const kvs = el("refKvs");
+    const kvsAm = el("refKvsAm");
+    if (!kbmBox) return;
+
+    const kbm = tariffs.kbm_class_table || {};
+    const order = ["M", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"];
+    const news = order.map((c) => Number((kbm[c] || {}).new)).filter((n) => !Number.isNaN(n));
+    const lo = Math.min(...news);
+    const hi = Math.max(...news);
+    let h = `<h3>КБМ · класс</h3><p class="ref-sub">Актуальные значения 7204-У · «было» — старая шкала</p>`;
+    h += `<table class="ref-table"><thead><tr><th>Класс</th><th>Было</th><th>Сейчас</th></tr></thead><tbody>`;
+    for (const c of order) {
+      const row = kbm[c];
+      if (!row) continue;
+      h += `<tr><td>${c}</td><td class="old-kbm">${fmtCell(row.old)}</td>`;
+      h += `<td class="heat" style="${heatStyle(row.new, lo, hi)}">${fmtCell(row.new)}</td></tr>`;
+    }
+    h += `</tbody></table>`;
+    kbmBox.innerHTML = h;
+
+    const kmB = tariffs.km_b || [];
+    const kmAm = tariffs.km_am || [];
+    const ks = tariffs.ks_months || {};
+    const kmLabel = (band, prev) => {
+      if (band.max_hp == null) return `свыше ${prev}`;
+      if (prev == null) return `до ${band.max_hp} вкл.`;
+      return `свыше ${prev} до ${band.max_hp} вкл.`;
+    };
+    let prev = null;
+    let kmBh = "";
+    for (const band of kmB) {
+      kmBh += `<tr><td>${kmLabel(band, prev)}</td><td class="heat" style="${heatStyle(band.k, 0.6, 1.6)}">${fmtCell(band.k)}</td></tr>`;
+      prev = band.max_hp;
+    }
+    prev = null;
+    let kmAh = "";
+    for (const band of kmAm) {
+      kmAh += `<tr><td>${kmLabel(band, prev)}</td><td class="heat" style="${heatStyle(band.k, 1.0, 1.66)}">${fmtCell(band.k)}</td></tr>`;
+      prev = band.max_hp;
+    }
+    let ksh = "";
+    for (const m of [3, 4, 5, 6, 7, 8, 9, 10]) {
+      const v = ks[String(m)];
+      const lab = m === 10 ? "10 и более" : String(m);
+      ksh += `<tr><td>${lab} мес.</td><td class="heat" style="${heatStyle(v, 0.5, 1)}">${fmtCell(v)}</td></tr>`;
+    }
+    kmBox.innerHTML = `
+      <h3>КМ · мощность</h3>
+      <p class="ref-sub">Лошадиные силы · для C / D / Tb / Tm / тракторов КМ = 1</p>
+      <div class="ref-pair" style="gap:10px">
+        <div>
+          <p class="ref-sub" style="margin:0 0 6px">Категория B</p>
+          <table class="ref-table"><thead><tr><th>Мощность</th><th>КМ</th></tr></thead><tbody>${kmBh}</tbody></table>
+        </div>
+        <div>
+          <p class="ref-sub" style="margin:0 0 6px">Категории A / M</p>
+          <table class="ref-table"><thead><tr><th>Мощность</th><th>КМ</th></tr></thead><tbody>${kmAh}</tbody></table>
+        </div>
+      </div>
+    `;
+    ksBox.innerHTML = `
+      <h3>КС · период использования</h3>
+      <p class="ref-sub">Месяцы использования ТС в течение года</p>
+      <table class="ref-table" style="max-width:280px"><thead><tr><th>Период</th><th>КС</th></tr></thead><tbody>${ksh}</tbody></table>
+    `;
+
+    const mul = tariffs.kvs_legal_multiplier || 1.8;
+    renderKvsTable(
+      kvs,
+      "КВС · все категории кроме A / M",
+      `ЮЛ: КВС × ${fmtCell(mul)} · стаж в годах`,
+      tariffs.kvs_table || [],
+      tariffs.kvs_age_mins || [],
+      tariffs.kvs_exp_mins || []
+    );
+    renderKvsTable(
+      kvsAm,
+      "КВС · категории A / M (и A1 / B1)",
+      "Отдельная таблица по 7204-У · стаж в годах",
+      tariffs.kvs_table_am || [],
+      tariffs.kvs_age_mins_am || [],
+      tariffs.kvs_exp_mins || []
+    );
+  }
+
+  function el(id) { return document.getElementById(id); }
+
+  function pinFloatingList(list, anchor) {
+    const r = anchor.getBoundingClientRect();
+    const gap = 4;
+    const maxH = 360;
+    const spaceBelow = window.innerHeight - r.bottom - gap - 8;
+    const spaceAbove = r.top - gap - 8;
+    const openUp = spaceBelow < 180 && spaceAbove > spaceBelow;
+    // выносим из панели (backdrop-filter иначе обрезает), чтобы список был поверх всего
+    if (list.parentElement !== document.body) {
+      list._homeParent = list.parentElement;
+      list._homeNext = list.nextSibling;
+      document.body.appendChild(list);
+    }
+    list.style.left = `${Math.round(r.left)}px`;
+    list.style.width = `${Math.round(r.width)}px`;
+    list.style.right = "auto";
+    if (openUp) {
+      list.style.top = "auto";
+      list.style.bottom = `${Math.round(window.innerHeight - r.top + gap)}px`;
+      list.style.maxHeight = `${Math.round(Math.min(maxH, Math.max(120, spaceAbove)))}px`;
+    } else {
+      list.style.bottom = "auto";
+      list.style.top = `${Math.round(r.bottom + gap)}px`;
+      list.style.maxHeight = `${Math.round(Math.min(maxH, Math.max(120, spaceBelow)))}px`;
+    }
+  }
+
+  function closeFloatingList(list, btn) {
+    list.classList.remove("open");
+    if (btn) btn.setAttribute("aria-expanded", "false");
+    list.style.left = "";
+    list.style.top = "";
+    list.style.bottom = "";
+    list.style.width = "";
+    list.style.right = "";
+    list.style.maxHeight = "";
+    if (list._homeParent) {
+      if (list._homeNext && list._homeNext.parentNode === list._homeParent) {
+        list._homeParent.insertBefore(list, list._homeNext);
+      } else {
+        list._homeParent.appendChild(list);
+      }
+      list._homeParent = null;
+      list._homeNext = null;
+    }
+  }
+
+  function openFloatingList(list, btn) {
+    list.classList.add("open");
+    btn.setAttribute("aria-expanded", "true");
+    pinFloatingList(list, btn);
+  }
+
+  function fmtRub(n) {
+    return Number(n).toLocaleString("ru-RU");
+  }
+
+  function rateText(cat) {
+    return `${fmtRub(cat.min)} – ${fmtRub(cat.max)} ₽`;
+  }
+
+  function updateTbOut(val) {
+    const out = el("tbOut");
+    const minEl = el("tbBoundMin");
+    const maxEl = el("tbBoundMax");
+    minEl.classList.toggle("on", val === tbMin);
+    maxEl.classList.toggle("on", val === tbMax);
+    paintTbSlider(val);
+    if (val < tbMin || val > tbMax) {
+      out.className = "tb-out warn";
+      out.textContent = `Вне тарифного коридора ${fmtRub(tbMin)} – ${fmtRub(tbMax)} ₽`;
+    } else {
+      out.className = "tb-out ok";
+      out.textContent = `Тарифный коридор ${fmtRub(tbMin)} – ${fmtRub(tbMax)} ₽`;
+    }
+  }
+
+  function paintTbSlider(val) {
+    const slider = el("tbSlider");
+    const span = tbMax - tbMin;
+    const pct = span <= 0 ? 100 : Math.max(0, Math.min(100, ((Number(val) - tbMin) / span) * 100));
+    // Жёлтая заливка от самого левого края до ползунка
+    slider.style.backgroundImage =
+      `linear-gradient(to right, var(--warn) 0%, var(--warn) ${pct}%, #2a3648 ${pct}%, #2a3648 100%)`;
+  }
+
+  function setTbValue(val, { fromSlider } = {}) {
+    const n = Math.round(Number(val));
+    if (!Number.isFinite(n)) return;
+    syncingTb = true;
+    el("tbValue").value = String(n);
+    if (!fromSlider) el("tbSlider").value = String(n);
+    syncingTb = false;
+    updateTbOut(n);
+    scheduleCalculate();
+  }
+
+  function setTbCategory(id, { resetValue = true } = {}) {
+    const cats = tariffs.tb_categories || [];
+    const cat = cats.find((c) => c.id === id) || cats[0];
+    if (!cat) return;
+    selectedTbId = cat.id;
+    tbMin = Number(cat.min);
+    tbMax = Number(cat.max);
+    el("tbBtnName").textContent = cat.label;
+    el("tbBtnRate").textContent = rateText(cat);
+    el("tbList").querySelectorAll("li").forEach((li) => {
+      li.classList.toggle("active", li.dataset.id === cat.id);
+    });
+    const slider = el("tbSlider");
+    slider.min = String(tbMin);
+    slider.max = String(tbMax);
+    slider.step = "1";
+    el("tbBoundMin").textContent = fmtRub(tbMin);
+    el("tbBoundMax").textContent = fmtRub(tbMax);
+    el("tbValue").min = String(tbMin);
+    el("tbValue").max = String(tbMax);
+    if (resetValue) setTbValue(tbMax);
+    else updateTbOut(Number(el("tbValue").value));
+    refreshKtDisplay();
+    refreshKmDisplay();
+    scheduleCalculate();
+  }
+
+  function vehicleGroupFromTb() {
+    const id = String(selectedTbId || "");
+    if (id === "A_M") return "A";
+    if (id.startsWith("B_")) return "B";
+    return "OTHER";
+  }
+
+  function lookupKm(hp) {
+    if (!tariffs) return null;
+    const group = vehicleGroupFromTb();
+    if (group === "OTHER") return 1;
+    const n = Number(hp);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    const bands = group === "A" ? (tariffs.km_am || []) : (tariffs.km_b || []);
+    for (const band of bands) {
+      const mx = band.max_hp;
+      if (mx == null || n <= Number(mx)) return Number(band.k);
+    }
+    return bands.length ? Number(bands[bands.length - 1].k) : null;
+  }
+
+  function refreshKmDisplay() {
+    const group = vehicleGroupFromTb();
+    const kmBlock = (() => {
+      const labels = [...document.querySelectorAll("label")];
+      const lab = labels.find((x) => /КМ/.test(x.textContent || ""));
+      return lab ? lab.parentElement : null;
+    })();
+    if (kmBlock) {
+      kmBlock.classList.toggle("is-km-off", group === "OTHER");
+      kmBlock.title = group === "OTHER"
+        ? "По 7204-У для C/D/Tb/Tm/тракторов КМ не применяется (=1)"
+        : "";
+    }
+    if (group === "OTHER") {
+      el("kmValue").textContent = "1";
+      el("powerHp").disabled = true;
+      el("powerKw").disabled = true;
+      return;
+    }
+    el("powerHp").disabled = false;
+    el("powerKw").disabled = false;
+    const km = lookupKm(el("powerHp").value);
+    el("kmValue").textContent = km == null ? "—" : fmtKt(km);
+  }
+
+  function refreshKsDisplay() {
+    const m = Number(el("months").value);
+    let ks = null;
+    if (tariffs && tariffs.ks_months) {
+      const key = m >= 10 ? "10" : String(m);
+      ks = tariffs.ks_months[key];
+    }
+    el("ksValue").textContent = ks == null ? "—" : fmtKt(ks);
+  }
+
+  function refreshKoDisplay() {
+    const ko = Number(el("ko").value);
+    el("koValue").textContent = Number.isFinite(ko) ? fmtKt(ko) : "—";
+  }
+
+  function setPowerHp(hp, { fromKw } = {}) {
+    const n = Number(hp);
+    if (!Number.isFinite(n) || n <= 0) return;
+    syncingPower = true;
+    el("powerHp").value = String(Math.round(n * 10) / 10);
+    if (!fromKw) {
+      el("powerKw").value = String(Math.round(n * HP_TO_KW * 10) / 10);
+    }
+    syncingPower = false;
+  }
+
+  function setPowerKw(kw) {
+    const n = Number(kw);
+    if (!Number.isFinite(n) || n <= 0) return;
+    const hp = n / HP_TO_KW;
+    syncingPower = true;
+    el("powerKw").value = String(Math.round(n * 10) / 10);
+    el("powerHp").value = String(Math.round(hp * 10) / 10);
+    syncingPower = false;
+  }
+
+  function isTractorTb() {
+    return selectedTbId === "tractor";
+  }
+
+  function territories() {
+    return (tariffs && tariffs.kt_territories) || [];
+  }
+
+  function ktById(id) {
+    return territories().find((t) => String(t.id) === String(id));
+  }
+
+  function fmtKt(v) {
+    return String(v).replace(".", ",");
+  }
+
+  function rowKt(row) {
+    return Number(isTractorTb() ? row.kt_tractor : row.kt);
+  }
+
+  function regionList() {
+    const seen = [];
+    const out = [];
+    for (const t of territories()) {
+      if (seen.includes(t.region)) continue;
+      seen.push(t.region);
+      out.push({ plate: t.plate || "", name: t.region });
+    }
+    return out;
+  }
+
+  function placesForRegion(region) {
+    return territories().filter((t) => t.region === region);
+  }
+
+  function setPlaceButton(row) {
+    if (!row) {
+      el("ktPlaceName").textContent = "—";
+      el("ktPlaceRate").textContent = "—";
+      return;
+    }
+    el("ktPlaceName").textContent = row.place || "весь регион / субъект";
+    el("ktPlaceRate").textContent = fmtKt(rowKt(row));
+  }
+
+  function refreshKtDisplay() {
+    const row = ktById(selectedKtId);
+    if (!row) {
+      el("ktValue").textContent = "—";
+      setPlaceButton(null);
+      return;
+    }
+    const v = rowKt(row);
+    selectedKtValue = v;
+    el("ktValue").textContent = fmtKt(v);
+    setPlaceButton(row);
+    // обновить жёлтые КТ в списке пунктов при смене ТБ
+    el("ktPlaceList").querySelectorAll("li").forEach((li) => {
+      const p = ktById(li.dataset.id);
+      if (!p) return;
+      li.querySelector(".tb-rate").textContent = fmtKt(rowKt(p));
+      li.classList.toggle("active", String(p.id) === String(selectedKtId));
+    });
+  }
+
+  function fillKtPlaces(region, preferId) {
+    const places = placesForRegion(region);
+    const list = el("ktPlaceList");
+    list.innerHTML = "";
+    closeFloatingList(list, el("ktPlaceBtn"));
+    for (const p of places) {
+      const li = document.createElement("li");
+      li.dataset.id = String(p.id);
+      li.innerHTML = `<span class="tb-name"></span><span class="tb-rate"></span>`;
+      li.querySelector(".tb-name").textContent = p.place || "весь регион / субъект";
+      li.querySelector(".tb-rate").textContent = fmtKt(rowKt(p));
+      li.onclick = () => {
+        selectedKtId = p.id;
+        closeFloatingList(list, el("ktPlaceBtn"));
+        refreshKtDisplay();
+        scheduleCalculate();
+      };
+      list.appendChild(li);
+    }
+    const prefer = places.find((p) => String(p.id) === String(preferId));
+    selectedKtId = prefer ? prefer.id : (places[0] && places[0].id);
+    refreshKtDisplay();
+  }
+
+  function initKtSelectors() {
+    const defId = tariffs.kt_default_id || "8.1";
+    const def = ktById(defId) || territories()[0];
+    const regSel = el("ktRegion");
+    regSel.innerHTML = "";
+    for (const r of regionList()) {
+      const o = document.createElement("option");
+      o.value = r.name;
+      o.textContent = r.plate ? `${r.plate} — ${r.name}` : r.name;
+      regSel.appendChild(o);
+    }
+    if (def) {
+      regSel.value = def.region;
+      fillKtPlaces(def.region, def.id);
+    }
+    regSel.onchange = () => {
+      fillKtPlaces(regSel.value);
+      scheduleCalculate();
+    };
+
+    const placeBtn = el("ktPlaceBtn");
+    const placeList = el("ktPlaceList");
+    placeBtn.onclick = (e) => {
+      e.stopPropagation();
+      // закрыть список ТБ, если открыт
+      closeFloatingList(el("tbList"), el("tbBtn"));
+      if (placeList.classList.contains("open")) closeFloatingList(placeList, placeBtn);
+      else openFloatingList(placeList, placeBtn);
+    };
+    document.addEventListener("click", (e) => {
+      if (!el("ktPlacePick").contains(e.target) && !placeList.contains(e.target)) {
+        closeFloatingList(placeList, placeBtn);
+      }
+    });
+  }
+
+  function parseRuDate(s) {
+    const m = String(s || "").trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (!m) return null;
+    const d = Number(m[1]), mo = Number(m[2]), y = Number(m[3]);
+    if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+    return new Date(y, mo - 1, d);
+  }
+
+  function yearsFromDate(s) {
+    const dt = parseRuDate(s);
+    if (!dt) return null;
+    const now = new Date();
+    let y = now.getFullYear() - dt.getFullYear();
+    const before =
+      now.getMonth() < dt.getMonth() ||
+      (now.getMonth() === dt.getMonth() && now.getDate() < dt.getDate());
+    if (before) y -= 1;
+    return Math.max(0, y);
+  }
+
+  function renumberDrivers() {
+    [...el("drivers").querySelectorAll(".driver")].forEach((wrap, i) => {
+      const n = i + 1;
+      wrap.dataset.id = String(n);
+      const title = wrap.querySelector(".driver-head span");
+      if (title) title.textContent = `Водитель ${n}`;
+      const rm = wrap.querySelector("[data-rm]");
+      if (rm) {
+        rm.setAttribute("data-rm", String(n));
+        rm.onclick = () => {
+          if (el("drivers").children.length <= 1) return;
+          wrap.remove();
+          renumberDrivers();
+          scheduleCalculate();
+        };
+      }
+    });
+    driverN = el("drivers").children.length;
+  }
+
+  function nearestDateFromYears(years) {
+    const n = Math.round(Number(years));
+    if (!Number.isFinite(n) || n < 0) return "";
+    const now = new Date();
+    const dt = new Date(now.getFullYear() - n, now.getMonth(), now.getDate());
+    const pad = (x) => String(x).padStart(2, "0");
+    return `${pad(dt.getDate())}.${pad(dt.getMonth() + 1)}.${dt.getFullYear()}`;
+  }
+
+  const KBM_STEPS_DEFAULT = [0.46, 0.52, 0.57, 0.63, 0.68, 0.74, 0.78, 0.83, 0.91, 1, 1.17, 1.76, 2.25, 2.94, 3.92];
+
+  function kbmSteps() {
+    const table = tariffs && tariffs.kbm_class_table;
+    if (!table) return KBM_STEPS_DEFAULT.slice();
+    const vals = Object.values(table)
+      .map((row) => Number(row && row.new))
+      .filter((v) => Number.isFinite(v) && v >= 0.4 && v <= 4);
+    const uniq = [...new Set(vals)].sort((a, b) => a - b);
+    return uniq.length >= 10 ? uniq : KBM_STEPS_DEFAULT.slice();
+  }
+
+  function nearestKbmIndex(value, steps) {
+    const v = Number(String(value).replace(",", "."));
+    if (!Number.isFinite(v)) return steps.indexOf(1.17) >= 0 ? steps.indexOf(1.17) : 0;
+    let best = 0;
+    let bestD = Infinity;
+    steps.forEach((s, i) => {
+      const d = Math.abs(s - v);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  function formatKbmStep(v) {
+    const n = Number(String(v).replace(",", "."));
+    if (!Number.isFinite(n)) return "1.17";
+    return String(Math.round(n * 100) / 100);
+  }
+
+  function parseKbmNumber(raw) {
+    const n = Number(String(raw ?? "").replace(",", "."));
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function bumpKbm(inp, dir) {
+    const steps = kbmSteps();
+    const prev = parseKbmNumber(inp.dataset.kbmPrev);
+    const shown = parseKbmNumber(inp.value);
+    const cur = prev != null ? prev : (shown != null ? shown : 1.17);
+    let i = nearestKbmIndex(cur, steps);
+    const onGrid = Math.abs(steps[i] - cur) < 1e-6;
+    if (onGrid) {
+      i = Math.max(0, Math.min(steps.length - 1, i + dir));
+    } else if (dir > 0) {
+      i = steps.findIndex((s) => s > cur + 1e-9);
+      if (i < 0) i = steps.length - 1;
+    } else {
+      i = 0;
+      for (let j = 0; j < steps.length; j++) {
+        if (steps[j] < cur - 1e-9) i = j;
+      }
+    }
+    const next = steps[i];
+    inp.value = formatKbmStep(next);
+    inp.dataset.kbmPrev = inp.value;
+    scheduleCalculate();
+  }
+
+  function bindKbmInput(inp) {
+    if (!inp || inp.dataset.kbmBound) return;
+    inp.dataset.kbmBound = "1";
+    inp.type = "text";
+    inp.inputMode = "decimal";
+    inp.removeAttribute("min");
+    inp.removeAttribute("max");
+    inp.removeAttribute("step");
+    const start = parseKbmNumber(inp.value);
+    inp.value = formatKbmStep(start != null ? kbmSteps()[nearestKbmIndex(start, kbmSteps())] : 1.17);
+    inp.dataset.kbmPrev = inp.value;
+
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        bumpKbm(inp, 1);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        bumpKbm(inp, -1);
+      }
+    });
+    inp.addEventListener("wheel", (e) => {
+      if (document.activeElement !== inp) return;
+      e.preventDefault();
+      bumpKbm(inp, e.deltaY < 0 ? 1 : -1);
+    }, { passive: false });
+    inp.addEventListener("blur", () => {
+      const steps = kbmSteps();
+      const cur = parseKbmNumber(inp.value);
+      const snapped = steps[nearestKbmIndex(cur != null ? cur : 1.17, steps)];
+      inp.value = formatKbmStep(snapped);
+      inp.dataset.kbmPrev = inp.value;
+      scheduleCalculate();
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    const t = e.target && e.target.nodeType === 1 ? e.target : (e.target && e.target.parentElement);
+    const btn = t && t.closest && t.closest("[data-kbm-dir]");
+    if (!btn) return;
+    e.preventDefault();
+    const box = btn.closest(".kbm-box");
+    const inp = box && box.querySelector('[data-f="kbm"]');
+    if (!inp || inp.disabled) return;
+    const dir = Number(btn.getAttribute("data-kbm-dir"));
+    if (dir === 1 || dir === -1) bumpKbm(inp, dir);
+  });
+
+  function formatVu(serie, number) {
+    const s = String(serie || "").replace(/\D/g, "").slice(0, 4);
+    const n = String(number || "").replace(/\D/g, "").slice(0, 6);
+    if (s && n) return `${s} ${n}`;
+    return s || n;
+  }
+
+  function parseVuRaw(raw) {
+    const digits = String(raw || "").replace(/\D/g, "").slice(0, 10);
+    if (digits.length >= 10) {
+      return { serie: digits.slice(0, 4), number: digits.slice(4, 10) };
+    }
+    if (digits.length > 4) {
+      return { serie: digits.slice(0, 4), number: digits.slice(4) };
+    }
+    return { serie: digits, number: "" };
+  }
+
+  function formatRuDateDigits(raw) {
+    const d = String(raw || "").replace(/\D/g, "").slice(0, 8);
+    if (d.length <= 2) return d;
+    if (d.length <= 4) return `${d.slice(0, 2)}.${d.slice(2)}`;
+    return `${d.slice(0, 2)}.${d.slice(2, 4)}.${d.slice(4)}`;
+  }
+
+  function applyRuDateMask(inp) {
+    const old = inp.value;
+    const start = inp.selectionStart;
+    const digitsBefore = old.slice(0, start).replace(/\D/g, "").length;
+    const next = formatRuDateDigits(old);
+    if (next === old) return false;
+    inp.value = next;
+    let pos = 0;
+    let seen = 0;
+    while (pos < next.length && seen < digitsBefore) {
+      if (/\d/.test(next[pos])) seen += 1;
+      pos += 1;
+    }
+    try { inp.setSelectionRange(pos, pos); } catch (_) {}
+    return true;
+  }
+
+  function bindDriverDateFields(wrap) {
+    const ageInp = wrap.querySelector('[data-f="age"]');
+    const dobInp = wrap.querySelector('[data-f="dob"]');
+    const expInp = wrap.querySelector('[data-f="experience"]');
+    const stazhInp = wrap.querySelector('[data-f="stazhStart"]');
+    const vuInp = wrap.querySelector('[data-f="vu"]');
+
+    const syncAgeFromDob = () => {
+      applyRuDateMask(dobInp);
+      const y = yearsFromDate(dobInp.value);
+      if (y != null) ageInp.value = String(y);
+      wrap.dataset.birthday = dobInp.value.trim();
+      scheduleCalculate();
+    };
+    const syncExpFromStazh = () => {
+      applyRuDateMask(stazhInp);
+      const y = yearsFromDate(stazhInp.value);
+      if (y != null) expInp.value = String(y);
+      wrap.dataset.stazhStart = stazhInp.value.trim();
+      scheduleCalculate();
+    };
+    const syncDobFromAge = () => {
+      const s = nearestDateFromYears(ageInp.value);
+      if (s) {
+        dobInp.value = s;
+        wrap.dataset.birthday = s;
+      }
+      scheduleCalculate();
+    };
+    const syncStazhFromExp = () => {
+      const s = nearestDateFromYears(expInp.value);
+      if (s) {
+        stazhInp.value = s;
+        wrap.dataset.stazhStart = s;
+      }
+      scheduleCalculate();
+    };
+    const applyVu = (raw, { format } = {}) => {
+      const { serie, number } = parseVuRaw(raw);
+      wrap.dataset.licenseSeries = serie;
+      wrap.dataset.licenseNumber = number;
+      if (format || (serie.length === 4 && number)) {
+        vuInp.value = formatVu(serie, number);
+      } else {
+        vuInp.value = serie + number;
+      }
+    };
+
+    dobInp.oninput = syncAgeFromDob;
+    stazhInp.oninput = syncExpFromStazh;
+    dobInp.onpaste = () => setTimeout(syncAgeFromDob, 0);
+    stazhInp.onpaste = () => setTimeout(syncExpFromStazh, 0);
+    ageInp.oninput = syncDobFromAge;
+    expInp.oninput = syncStazhFromExp;
+    vuInp.oninput = () => applyVu(vuInp.value);
+    vuInp.onpaste = (e) => {
+      const text = (e.clipboardData || window.clipboardData).getData("text");
+      if (!text) return;
+      e.preventDefault();
+      const digits = String(text).replace(/\D/g, "");
+      const cur = parseVuRaw(vuInp.value);
+      if (digits.length >= 10) {
+        applyVu(digits, { format: true });
+      } else if (digits.length === 6 && cur.serie.length === 4 && !cur.number) {
+        applyVu(cur.serie + digits, { format: true });
+      } else if (digits.length === 4 && !cur.serie && !cur.number) {
+        applyVu(digits, { format: true });
+      } else if (digits.length === 6 && !cur.serie) {
+        wrap.dataset.licenseSeries = "";
+        wrap.dataset.licenseNumber = digits;
+        vuInp.value = digits;
+      } else {
+        applyVu(digits, { format: true });
+      }
+    };
+    vuInp.onblur = () => applyVu(vuInp.value, { format: true });
+  }
+
+  function addDriver(pre = {}) {
+    if (PUBLIC_MODE) {
+      const wrap = document.createElement("div");
+      wrap.className = "driver";
+      const dob = pre.birthday || "";
+      const stazhStart = pre.stazh_start || pre.stazh_raw || pre.license_date || "";
+      const ageApprox = !dob && pre.age != null && pre.age !== "";
+      const expApprox = !stazhStart && pre.experience != null && pre.experience !== "";
+      const dobFill = dob || (ageApprox ? nearestDateFromYears(pre.age) : "");
+      const stazhFill = stazhStart || (expApprox ? nearestDateFromYears(pre.experience) : "");
+      if (dobFill) wrap.dataset.birthday = dobFill;
+      if (stazhFill) wrap.dataset.stazhStart = stazhFill;
+      wrap.innerHTML = `
+        <div class="driver-head">
+          <span>Водитель</span>
+          <button type="button" class="secondary" data-rm="x" style="padding:4px 10px;font-size:0.8rem">удалить</button>
+        </div>
+        <div class="driver-stats driver-stats--compact">
+          <div>
+            <label>КБМ</label>
+            <div class="kbm-box">
+              <input data-f="kbm" class="tb-value-input" type="text" inputmode="decimal" value="${pre.kbm ?? 1.17}">
+              <span class="kbm-spin">
+                <button type="button" tabindex="-1" data-kbm-dir="1" aria-label="КБМ выше">▲</button>
+                <button type="button" tabindex="-1" data-kbm-dir="-1" aria-label="КБМ ниже">▼</button>
+              </span>
+            </div>
+          </div>
+          <div>
+            <label>Возраст</label>
+            <div class="pair-split">
+              <input data-f="dob" type="text" value="${dobFill}" placeholder="дд.мм.гггг" aria-label="Дата рождения">
+              <div class="unit-field">
+                <input data-f="age" type="number" value="${pre.age ?? ""}" placeholder="лет" aria-label="Возраст, лет">
+                <span class="unit">лет</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label>Стаж</label>
+            <div class="pair-split">
+              <input data-f="stazhStart" type="text" value="${stazhFill}" placeholder="дд.мм.гггг" aria-label="Начало стажа">
+              <div class="unit-field">
+                <input data-f="experience" type="number" value="${pre.experience ?? ""}" placeholder="лет" aria-label="Стаж, лет">
+                <span class="unit">лет</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label>КВС</label>
+            <div class="kvs-out" data-f="kvs">—</div>
+          </div>
+        </div>`;
+      el("drivers").appendChild(wrap);
+      wrap.querySelectorAll("input").forEach((inp) => {
+        if (inp.matches('[data-f="dob"], [data-f="stazhStart"], [data-f="age"], [data-f="experience"], [data-f="kbm"]')) return;
+        inp.oninput = () => scheduleCalculate();
+      });
+      bindDriverDateFields(wrap);
+      bindKbmInput(wrap.querySelector('[data-f="kbm"]'));
+      wrap.querySelector('[data-rm="x"]').onclick = () => {
+        wrap.remove();
+        renumberDrivers();
+        scheduleCalculate();
+      };
+      renumberDrivers();
+      return wrap;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "driver";
+    const dob = pre.birthday || "";
+    const stazhStart = pre.stazh_start || pre.stazh_raw || pre.license_date || "";
+    const serie = pre.license_series || "";
+    const number = pre.license_number || "";
+    const ageApprox = !dob && pre.age != null && pre.age !== "";
+    const expApprox = !stazhStart && pre.experience != null && pre.experience !== "";
+    const dobFill = dob || (ageApprox ? nearestDateFromYears(pre.age) : "");
+    const stazhFill = stazhStart || (expApprox ? nearestDateFromYears(pre.experience) : "");
+    if (dobFill) wrap.dataset.birthday = dobFill;
+    if (stazhFill) wrap.dataset.stazhStart = stazhFill;
+    if (serie) wrap.dataset.licenseSeries = serie;
+    if (number) wrap.dataset.licenseNumber = number;
+    const vuFill = formatVu(serie, number);
+    wrap.innerHTML = `
+      <div class="driver-head">
+        <span>Водитель</span>
+        <button type="button" class="secondary" data-rm="x" style="padding:4px 10px;font-size:0.8rem">удалить</button>
+      </div>
+      <div class="driver-grid">
+        <div>
+          <label>Фамилия</label>
+          <input data-f="last" value="${pre.last || pre.name || ""}" placeholder="Иванов">
+        </div>
+        <div>
+          <label>Имя</label>
+          <input data-f="first" value="${pre.first || ""}" placeholder="Иван">
+        </div>
+        <div>
+          <label>Отчество</label>
+          <input data-f="middle" value="${pre.middle || ""}" placeholder="Иванович">
+        </div>
+      </div>
+      <div class="driver-stats">
+        <div>
+          <label>КБМ</label>
+          <div class="kbm-box">
+            <input data-f="kbm" class="tb-value-input" type="text" inputmode="decimal" value="${pre.kbm ?? 1.17}">
+            <span class="kbm-spin">
+              <button type="button" tabindex="-1" data-kbm-dir="1" aria-label="КБМ выше">▲</button>
+              <button type="button" tabindex="-1" data-kbm-dir="-1" aria-label="КБМ ниже">▼</button>
+            </span>
+          </div>
+        </div>
+        <div>
+          <label>Возраст</label>
+          <div class="pair-split">
+            <input data-f="dob" type="text" value="${dobFill}" placeholder="дд.мм.гггг" aria-label="Дата рождения">
+            <div class="unit-field">
+              <input data-f="age" type="number" value="${pre.age ?? ""}" placeholder="лет" aria-label="Возраст, лет">
+              <span class="unit">лет</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>Стаж</label>
+          <div class="pair-split">
+            <input data-f="stazhStart" type="text" value="${stazhFill}" placeholder="дд.мм.гггг" aria-label="Начало стажа">
+            <div class="unit-field">
+              <input data-f="experience" type="number" value="${pre.experience ?? ""}" placeholder="лет" aria-label="Стаж, лет">
+              <span class="unit">лет</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>ВУ</label>
+          <input data-f="vu" type="text" inputmode="numeric" value="${vuFill}" placeholder="серия номер" aria-label="Серия и номер ВУ" autocomplete="off">
+        </div>
+        <div>
+          <label>КВС</label>
+          <div class="kvs-out" data-f="kvs">—</div>
+        </div>
+      </div>`;
+    el("drivers").appendChild(wrap);
+    wrap.querySelectorAll("input").forEach((inp) => {
+      if (inp.matches('[data-f="dob"], [data-f="stazhStart"], [data-f="age"], [data-f="experience"], [data-f="vu"], [data-f="kbm"]')) return;
+      inp.oninput = () => scheduleCalculate();
+    });
+    bindDriverDateFields(wrap);
+    bindKbmInput(wrap.querySelector('[data-f="kbm"]'));
+    renumberDrivers();
+    return wrap;
+  }
+
+  function numOrNull(raw) {
+    const s = String(raw ?? "").trim();
+    if (!s) return null;
+    const n = Number(s.replace(",", "."));
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function collectDrivers() {
+    return [...el("drivers").querySelectorAll(".driver")].map((d) => {
+      const last = PUBLIC_MODE ? "" : d.querySelector('[data-f="last"]').value.trim();
+      const first = PUBLIC_MODE ? "" : d.querySelector('[data-f="first"]').value.trim();
+      const middle = PUBLIC_MODE ? "" : d.querySelector('[data-f="middle"]').value.trim();
+      const dob = d.querySelector('[data-f="dob"]').value.trim();
+      const stazhStart = d.querySelector('[data-f="stazhStart"]').value.trim();
+      const vu = PUBLIC_MODE ? { serie: "", number: "" } : parseVuRaw(d.querySelector('[data-f="vu"]').value);
+      const serie = vu.serie || d.dataset.licenseSeries || "";
+      const number = vu.number || d.dataset.licenseNumber || "";
+      const name = [last, first, middle].filter(Boolean).join(" ");
+      return {
+        name,
+        last,
+        first,
+        middle,
+        kbm: numOrNull(d.querySelector('[data-f="kbm"]').value),
+        age: numOrNull(d.querySelector('[data-f="age"]').value),
+        experience: numOrNull(d.querySelector('[data-f="experience"]').value),
+        birthday: dob || d.dataset.birthday || "",
+        stazh_start: stazhStart || d.dataset.stazhStart || "",
+        license_series: serie,
+        license_number: number,
+      };
+    });
+  }
+
+  function collectDriversForKbm() {
+    return collectDrivers()
+      .filter((d) => d.last && d.first && d.birthday && d.license_series && d.license_number)
+      .map((d) => ({
+        last_name: d.last,
+        first_name: d.first,
+        patronymic: d.middle,
+        birthday: d.birthday,
+        license_series: d.license_series,
+        license_number: d.license_number,
+      }));
+  }
+
+  function applyDriverKvs(details) {
+    const nodes = el("drivers").querySelectorAll(".driver");
+    (details || []).forEach((d, i) => {
+      const cell = nodes[i] && nodes[i].querySelector('[data-f="kvs"]');
+      if (cell) cell.textContent = fmtFactor(d.kvs);
+    });
+  }
+
+  function setVuBusy(on, text) {
+    const zone = el("vuDropZone");
+    if (zone) zone.classList.toggle("busy", !!on);
+    if (el("kbmBtn")) el("kbmBtn").disabled = !!on;
+    if (el("kbmLoginBtn")) el("kbmLoginBtn").disabled = !!on;
+    if (el("vuFolderBtn")) el("vuFolderBtn").disabled = !!on;
+    if (el("vuCarBtn")) el("vuCarBtn").disabled = !!on;
+    el("addDriver").disabled = !!on || isPhysUnlimited();
+    if (el("clearDrivers")) el("clearDrivers").disabled = !!on || isPhysUnlimited();
+    if (text) el("vuProgressText").textContent = text;
+  }
+
+  function setVuNote(text, cls) {
+    const n = el("vuNote");
+    n.textContent = text || "";
+    n.className = "vu-note" + (cls ? " " + cls : "");
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("не удалось прочитать файл"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function bindDropZone(zoneEl, inputEl, onFiles) {
+    if (!zoneEl || !inputEl) return;
+    zoneEl.addEventListener("click", () => {
+      if (zoneEl.classList.contains("busy")) return;
+      inputEl.click();
+    });
+    zoneEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (!zoneEl.classList.contains("busy")) inputEl.click();
+      }
+    });
+    ["dragenter", "dragover"].forEach((ev) => {
+      zoneEl.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!zoneEl.classList.contains("busy")) zoneEl.classList.add("dragover");
+      });
+    });
+    zoneEl.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      zoneEl.classList.remove("dragover");
+    });
+    zoneEl.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      zoneEl.classList.remove("dragover");
+      if (zoneEl.classList.contains("busy")) return;
+      onFiles(e.dataTransfer && e.dataTransfer.files);
+    });
+    inputEl.addEventListener("change", () => {
+      onFiles(inputEl.files);
+      inputEl.value = "";
+    });
+  }
+
+  function isBlankDriver(node) {
+    const last = node.querySelector('[data-f="last"]').value.trim();
+    const first = node.querySelector('[data-f="first"]').value.trim();
+    return !last && !first;
+  }
+
+  function fileMeta(f) {
+    const rel = f.webkitRelativePath || "";
+    const parts = rel.replace(/\\/g, "/").split("/").filter(Boolean);
+    const folder = parts.length >= 2 ? parts[0] : "";
+    return {
+      name: f.name,
+      folder_hint: folder,
+      relative_path: rel,
+      _file: f,
+    };
+  }
+
+  let pendingDriverRows = [];
+  let carPickerSelected = null;
+  let carPickerClientDrivers = [];
+  let carPickerMatches = [];
+  let carPickerSearchTimer = null;
+  let carPickerAddrTimer = null;
+  let carPickerAddrSuggestions = [];
+  let carPickerDadataKt = null;
+
+  function hideDriverPick() {
+    pendingDriverRows = [];
+    const box = el("driverPick");
+    if (box) box.hidden = true;
+    const list = el("driverPickList");
+    if (list) list.innerHTML = "";
+  }
+
+  function showDriverPick(rows, { title } = {}) {
+    pendingDriverRows = rows || [];
+    const box = el("driverPick");
+    const list = el("driverPickList");
+    const head = el("driverPickHead");
+    if (!box || !list) return;
+    head.textContent = title || `Найдено в базе: ${pendingDriverRows.length} — отметьте, кого добавить`;
+    list.innerHTML = pendingDriverRows.map((row, i) => {
+      const fio = [row.last_name, row.first_name, row.patronymic].filter(Boolean).join(" ");
+      const vu = [row.license_series, row.license_number].filter(Boolean).join(" ");
+      const meta = [
+        row.birthday ? `ДР ${row.birthday}` : "",
+        vu ? `ВУ ${vu}` : "",
+        row.age != null && row.age !== "" ? `${row.age} лет` : "",
+      ].filter(Boolean).join(" · ");
+      return `<label>
+        <input type="checkbox" data-pick="${i}">
+        <span><strong></strong><div class="driver-pick-meta"></div></span>
+      </label>`;
+    }).join("");
+    [...list.children].forEach((lab, i) => {
+      const row = pendingDriverRows[i];
+      const fio = [row.last_name, row.first_name, row.patronymic].filter(Boolean).join(" ");
+      const vu = [row.license_series, row.license_number].filter(Boolean).join(" ");
+      const meta = [
+        row.birthday ? `ДР ${row.birthday}` : "",
+        vu ? `ВУ ${vu}` : "",
+        row.age != null && row.age !== "" ? `${row.age} лет` : "",
+      ].filter(Boolean).join(" · ");
+      lab.querySelector("strong").textContent = fio || `Водитель ${i + 1}`;
+      lab.querySelector(".driver-pick-meta").textContent = meta || "—";
+    });
+    box.hidden = false;
+  }
+
+  function selectedPickRows() {
+    return [...el("driverPickList").querySelectorAll('input[type="checkbox"]')]
+      .filter((inp) => inp.checked)
+      .map((inp) => pendingDriverRows[Number(inp.dataset.pick)])
+      .filter(Boolean);
+  }
+
+  async function commitPickedDrivers({ withKbm } = {}) {
+    const rows = selectedPickRows();
+    if (!rows.length) {
+      setVuNote("Отметьте хотя бы одного водителя", "err");
+      return;
+    }
+    applyVuRows(rows);
+    hideDriverPick();
+    setVuNote(`Список заменён: ${rows.length} вод.` + (withKbm ? "" : " · КБМ можно проверить кнопкой ниже"), "ok");
+    scheduleCalculate();
+    if (withKbm) {
+      setVuBusy(true, "Проверка КБМ…");
+      await runKbmCheck(true);
+    }
+  }
+
+  function applyVuRows(rows) {
+    // новый клиент / новый набор — полностью заменяет предыдущий расчёт
+    el("drivers").innerHTML = "";
+    driverN = 0;
+    // ручное понижение ТБ с прошлого расчёта не переносим
+    setTbValue(tbMax);
+    let dbN = 0;
+    let fromFolder = 0;
+    let fromName = 0;
+    for (const row of rows) {
+      if (row.db_match) dbN += 1;
+      if (row.fast_path === "folder_db") fromFolder += 1;
+      if (row.fast_path === "filename_db") fromName += 1;
+      addDriver({
+        last: row.last_name || "",
+        first: row.first_name || "",
+        middle: row.patronymic || "",
+        age: row.age ?? "",
+        experience: row.experience ?? "",
+        kbm: 1.17,
+        birthday: row.birthday || "",
+        stazh_start: row.stazh_raw || row.license_date || "",
+        license_series: row.license_series || "",
+        license_number: row.license_number || "",
+      });
+    }
+    if (!el("drivers").children.length) {
+      addDriver({});
+    }
+    renumberDrivers();
+    return { dbN, fromFolder, fromName };
+  }
+
+  function applyKtTerritory(row) {
+    if (!row || !row.id) return null;
+    const regSel = el("ktRegion");
+    if (regSel) regSel.value = row.region;
+    fillKtPlaces(row.region, row.id);
+    return row;
+  }
+
+  function applyCarFields(car) {
+    if (!car) return { kt: null, power: false };
+    let power = false;
+    if (car.power_hp != null && Number(car.power_hp) > 0) {
+      setPowerHp(car.power_hp);
+      refreshKmDisplay();
+      power = true;
+    }
+    let kt = null;
+    if (car.kt_id) {
+      const row = ktById(car.kt_id);
+      if (row) kt = applyKtTerritory(row);
+    }
+    return { kt, power };
+  }
+
+  function ktHintForCar(car) {
+    if (!car) return { text: "", row: null };
+    const row = car.kt_id ? ktById(car.kt_id) : null;
+    if (car.kt != null) {
+      return {
+        text: `КТ ${fmtKt(car.kt)}`,
+        row: row || { id: car.kt_id, kt: car.kt, place: car.kt_place, region: car.kt_region },
+      };
+    }
+    return { text: "КТ —", row: null };
+  }
+
+  function applyDadataKtToCar(car, ktPayload) {
+    if (!car || !ktPayload || !ktPayload.ok || !ktPayload.territory) return car;
+    const t = ktPayload.territory;
+    car.kt_id = t.id;
+    car.kt = t.kt;
+    car.kt_tractor = t.kt_tractor;
+    car.kt_region = t.region;
+    car.kt_place = t.place;
+    car.kt_label = t.label;
+    car.kt_resolve = {
+      ok: true,
+      method: ktPayload.method,
+      note: "",
+      city_used: ktPayload.city_used,
+      plate_used: ktPayload.plate_used,
+    };
+    if (ktPayload.address) car.address = ktPayload.address;
+    if (ktPayload.city_used) car.kt_city = ktPayload.city_used;
+    return car;
+  }
+
+  function hideAddrSuggest() {
+    const list = el("carPickerAddrList");
+    if (list) {
+      list.hidden = true;
+      list.innerHTML = "";
+    }
+    carPickerAddrSuggestions = [];
+  }
+
+  function renderAddrSuggest(items) {
+    const list = el("carPickerAddrList");
+    if (!list) return;
+    carPickerAddrSuggestions = items || [];
+    list.innerHTML = "";
+    if (!carPickerAddrSuggestions.length) {
+      list.hidden = true;
+      return;
+    }
+    carPickerAddrSuggestions.forEach((sug, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      const kt = sug.kt || {};
+      const ktText = kt.ok && kt.kt != null ? `КТ ${fmtKt(kt.kt)}` : "";
+      btn.innerHTML = `<span></span><span class="meta"></span>`;
+      btn.querySelector("span").textContent = sug.unrestricted_value || sug.value || `Адрес ${i + 1}`;
+      btn.querySelector(".meta").textContent = ktText;
+      btn.onclick = () => selectAddrSuggestion(sug);
+      list.appendChild(btn);
+    });
+    list.hidden = false;
+  }
+
+  function selectAddrSuggestion(sug) {
+    hideAddrSuggest();
+    const inp = el("carPickerAddr");
+    if (inp) inp.value = sug.unrestricted_value || sug.value || "";
+    carPickerDadataKt = sug.kt || null;
+    if (carPickerSelected && carPickerSelected.car && carPickerDadataKt && carPickerDadataKt.ok) {
+      carPickerSelected.car = applyDadataKtToCar(carPickerSelected.car, carPickerDadataKt);
+      renderCarPickerHint(carPickerSelected.car);
+      renderCarPickerCars(carPickerMatches);
+    } else if (carPickerDadataKt && carPickerDadataKt.ok) {
+      el("carPickerHint").innerHTML =
+        `<div>КТ <strong>${fmtKt(carPickerDadataKt.kt)}</strong></div>`;
+    }
+  }
+
+  async function searchAddrSuggest(q) {
+    const query = String(q || "").trim();
+    if (query.length < 3) {
+      hideAddrSuggest();
+      return;
+    }
+    try {
+      const r = await fetch(`/api/address/suggest?q=${encodeURIComponent(query)}&count=7`);
+      const j = await r.json();
+      if (!j.ok) {
+        hideAddrSuggest();
+        if (j.error) setVuNote(j.error, "err");
+        return;
+      }
+      renderAddrSuggest(j.suggestions || []);
+    } catch (e) {
+      hideAddrSuggest();
+      setVuNote(e.message || String(e), "err");
+    }
+  }
+
+  function prefillAddrFromCar(car) {
+    if (!car) return;
+    const parts = [car.city || car.kt_city, car.street, car.house, car.apartment].filter(Boolean);
+    const q = parts.join(" ");
+    const inp = el("carPickerAddr");
+    if (inp && q) {
+      inp.value = q;
+      clearTimeout(carPickerAddrTimer);
+      carPickerAddrTimer = setTimeout(() => searchAddrSuggest(q), 120);
+    }
+  }
+
+  function renderCarPickerHint(car) {
+    const box = el("carPickerHint");
+    if (!box) return;
+    if (!car) {
+      box.innerHTML = `<span class="muted">Найдите машину, при необходимости уточните адрес.</span>`;
+      return;
+    }
+    const kt = ktHintForCar(car);
+    const power = car.power_hp != null ? `<strong>${car.power_hp}</strong> л.с.` : "— л.с.";
+    box.innerHTML =
+      `<div>${car.label || "—"}</div>` +
+      `<div>${power} · ${kt.text}</div>`;
+  }
+
+  function closeCarPicker() {
+    const pop = el("carPickerPop");
+    if (pop) pop.hidden = true;
+    carPickerSelected = null;
+    carPickerClientDrivers = [];
+    carPickerDadataKt = null;
+    hideAddrSuggest();
+  }
+
+  function openCarPicker() {
+    const pop = el("carPickerPop");
+    if (!pop) return;
+    pop.hidden = false;
+    const inp = el("carPickerSearch");
+    if (inp) {
+      inp.focus();
+      inp.select();
+    }
+    if (!(el("carPickerCarList") || {}).children?.length) {
+      renderCarPickerCars([]);
+      renderCarPickerHint(null);
+      renderCarPickerDrivers([]);
+    }
+  }
+
+  function toggleCarPicker() {
+    const pop = el("carPickerPop");
+    if (!pop) return;
+    if (pop.hidden) openCarPicker();
+    else closeCarPicker();
+  }
+
+  function renderCarPickerCars(matches) {
+    const list = el("carPickerCarList");
+    if (!list) return;
+    carPickerMatches = matches || [];
+    list.innerHTML = "";
+    if (!carPickerMatches.length) {
+      const empty = document.createElement("div");
+      empty.className = "car-picker-item";
+      empty.style.cursor = "default";
+      empty.textContent = "Ничего не найдено — введите фамилию или номер";
+      list.appendChild(empty);
+      return;
+    }
+    carPickerMatches.forEach((m, i) => {
+      const car = m.car || {};
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "car-picker-item";
+      btn.dataset.i = String(i);
+      const sel = carPickerSelected && carPickerSelected.car;
+      if (
+        sel &&
+        sel.label === car.label &&
+        sel.folder === car.folder &&
+        sel.plate === car.plate &&
+        sel.vin === car.vin
+      ) {
+        btn.classList.add("active");
+      }
+      const kt = ktHintForCar(car);
+      const meta = [
+        car.power_hp != null ? `${car.power_hp} л.с.` : "",
+        kt.text,
+      ].filter(Boolean).join(" · ");
+      btn.innerHTML = `<span></span><span class="meta"></span>`;
+      btn.querySelector("span").textContent = car.label || `Машина ${i + 1}`;
+      btn.querySelector(".meta").textContent = meta;
+      btn.onclick = () => selectCarPickerCar(m);
+      list.appendChild(btn);
+    });
+  }
+
+  function driverKey(d) {
+    return [
+      (d.license_series || "") + (d.license_number || ""),
+      (d.last_name || ""),
+      (d.first_name || ""),
+      (d.birthday || ""),
+    ].join("|");
+  }
+
+  function renderCarPickerDrivers(drivers, { precheckKeys } = {}) {
+    const list = el("carPickerDriverList");
+    const head = el("carPickerDriversHead");
+    if (!list) return;
+    const folder = (carPickerSelected && carPickerSelected.car && carPickerSelected.car.folder) || "";
+    if (head) head.textContent = folder ? `Водители клиента «${folder}»` : "Водители клиента";
+    list.innerHTML = "";
+    carPickerClientDrivers = drivers || [];
+    if (!carPickerClientDrivers.length) {
+      const empty = document.createElement("div");
+      empty.className = "car-picker-item";
+      empty.style.cursor = "default";
+      empty.textContent = "Выберите машину слева";
+      list.appendChild(empty);
+      return;
+    }
+    const pre = precheckKeys || new Set();
+    carPickerClientDrivers.forEach((d, i) => {
+      const lab = document.createElement("label");
+      const key = driverKey(d);
+      if (pre.has(key)) lab.classList.add("from-car");
+      const fio = [d.last_name, d.first_name, d.patronymic].filter(Boolean).join(" ");
+      const vu = [d.license_series, d.license_number].filter(Boolean).join(" ");
+      const meta = [
+        d.birthday ? `ДР ${d.birthday}` : "",
+        vu ? `ВУ ${vu}` : "",
+        d.car ? d.car : "",
+      ].filter(Boolean).join(" · ");
+      lab.innerHTML = `<input type="checkbox" data-idx="${i}"><span><strong></strong><div class="meta"></div></span>`;
+      lab.querySelector("input").checked = pre.has(key);
+      lab.querySelector("strong").textContent = fio || `Водитель ${i + 1}`;
+      lab.querySelector(".meta").textContent = meta || "—";
+      list.appendChild(lab);
+    });
+  }
+
+  async function selectCarPickerCar(match) {
+    carPickerSelected = match;
+    carPickerDadataKt = null;
+    const car = (match && match.car) || {};
+    renderCarPickerCars(carPickerMatches);
+    renderCarPickerHint(car);
+    prefillAddrFromCar(car);
+    const folder = car.folder || "";
+    const pre = new Set((match.drivers || []).map(driverKey));
+    if (!folder) {
+      renderCarPickerDrivers(match.drivers || [], { precheckKeys: pre });
+      return;
+    }
+    try {
+      const r = await fetch(`/api/db/client?folder=${encodeURIComponent(folder)}`);
+      const j = await r.json();
+      if (!j.ok) {
+        renderCarPickerDrivers(match.drivers || [], { precheckKeys: pre });
+        return;
+      }
+      renderCarPickerDrivers(j.drivers || [], { precheckKeys: pre });
+    } catch (_e) {
+      renderCarPickerDrivers(match.drivers || [], { precheckKeys: pre });
+    }
+  }
+
+  async function searchCarPicker(q) {
+    const query = String(q || "").trim();
+    if (query.length < 2) {
+      renderCarPickerCars([]);
+      return;
+    }
+    try {
+      const r = await fetch(`/api/db/search?q=${encodeURIComponent(query)}&limit=40`);
+      const j = await r.json();
+      renderCarPickerCars(j.matches || []);
+    } catch (e) {
+      setVuNote(e.message || String(e), "err");
+    }
+  }
+
+  function selectedCarPickerDrivers() {
+    return [...el("carPickerDriverList").querySelectorAll('input[type="checkbox"]')]
+      .filter((inp) => inp.checked)
+      .map((inp) => carPickerClientDrivers[Number(inp.dataset.idx)])
+      .filter(Boolean);
+  }
+
+  async function applyCarPickerSelection() {
+    if (isPhysUnlimited()) {
+      setVuNote("Сначала выберите ограниченный КО — иначе список водителей не используется", "err");
+      return;
+    }
+    if (!carPickerSelected) {
+      setVuNote("Сначала выберите машину в списке слева", "err");
+      return;
+    }
+    let car = { ...(carPickerSelected.car || {}) };
+    if (carPickerDadataKt && carPickerDadataKt.ok) {
+      car = applyDadataKtToCar(car, carPickerDadataKt);
+    } else if (!car.kt_id) {
+      try {
+        const qs = new URLSearchParams({
+          city: car.kt_city || car.city || "",
+          plate: car.plate || "",
+          street: car.street || "",
+        });
+        const r = await fetch(`/api/kt/resolve?${qs}`);
+        const j = await r.json();
+        if (j.ok && j.territory) {
+          car.kt_id = j.territory.id;
+          car.kt = j.territory.kt;
+          car.kt_region = j.territory.region;
+          car.kt_place = j.territory.place;
+          car.kt_label = j.territory.label;
+          car.kt_resolve = { ok: true, note: j.note, method: j.method };
+        }
+      } catch (_e) { /* вручную */ }
+    }
+    const drivers = selectedCarPickerDrivers();
+    if (!drivers.length) {
+      setVuNote("Отметьте хотя бы одного водителя", "err");
+      return;
+    }
+    const rows = drivers.map((d) => ({
+      ...d,
+      ok: true,
+      db_match: true,
+      fast_path: "car_db",
+    }));
+    applyVuRows(rows);
+    const meta = applyCarFields(car);
+    const bits = [];
+    bits.push(car.label || "машина");
+    if (meta.power) bits.push(`${car.power_hp} л.с.`);
+    if (meta.kt) bits.push(`КТ ${fmtKt(rowKt(meta.kt))}`);
+    bits.push(`${rows.length} вод.`);
+    setVuNote(`Подставлено: ${bits.join(" · ")}`, "ok");
+    closeCarPicker();
+    scheduleCalculate();
+  }
+
+  async function resolveVuPayload(payload) {
+    const r = await fetch("/api/vu/resolve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ files: payload }),
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || "ошибка распознавания");
+    return j;
+  }
+
+  async function processVuPhotos(fileList, { fromFolder = false } = {}) {
+    if (isPhysUnlimited()) {
+      setVuNote("Сначала выберите ограниченный КО — иначе список водителей не используется", "err");
+      return;
+    }
+
+    // Выбор папки: только имя папки → база, фото не распознаём
+    if (fromFolder) {
+      const any = [...(fileList || [])][0];
+      const rel = (any && any.webkitRelativePath) || "";
+      const folder = rel.replace(/\\/g, "/").split("/").filter(Boolean)[0] || "";
+      if (!folder) {
+        setVuNote("Не удалось определить имя папки", "err");
+        return;
+      }
+      setVuBusy(true, `Сверка с базой: ${folder}`);
+      setVuNote(`Ищу папку «${folder}» в SCAN_NEW (фото не отправляю)…`, "busy");
+      try {
+        const j = await resolveVuPayload([
+          { name: "", folder_hint: folder, relative_path: `${folder}/.` },
+        ]);
+        const rows = (j.results || []).filter((x) => x.ok || x.last_name);
+        if (!rows.length) {
+          setVuNote(
+            `Папка «${folder}» в базе не найдена. Перетащите фото прав в зону выше — тогда будет OCR.`,
+            "err"
+          );
+          return;
+        }
+        showDriverPick(rows, {
+          title: `Папка «${folder}»: найдено ${rows.length} — отметьте, кого добавить`,
+        });
+        setVuNote("Выберите водителей и нажмите «Добавить». КБМ — только по кнопке, если нужно.", "ok");
+        scheduleCalculate();
+      } catch (e) {
+        setVuNote(e.message || String(e), "err");
+      } finally {
+        setVuBusy(false);
+      }
+      return;
+    }
+
+    const files = [...(fileList || [])].filter((f) => f && f.type && f.type.startsWith("image/"));
+    if (!files.length) {
+      setVuNote("Нужны файлы-изображения (jpg/png/webp)", "err");
+      return;
+    }
+
+    const metas = files.map(fileMeta);
+    const withFolder = metas.filter((m) => m.folder_hint).length;
+
+    setVuBusy(true, withFolder ? `Сверка с базой по папке…` : `Сверка с базой…`);
+    setVuNote("Сначала база SCAN_NEW, OCR только если не нашли", "busy");
+
+    try {
+      let j = await resolveVuPayload(
+        metas.map(({ name, folder_hint, relative_path }) => ({ name, folder_hint, relative_path }))
+      );
+
+      const need = j.need_files || [];
+      if (need.length) {
+        const byKey = new Map();
+        metas.forEach((m) => {
+          byKey.set(m.name, m);
+          if (m.relative_path) byKey.set(m.relative_path, m);
+        });
+        const ranked = need
+          .map((n) => byKey.get(n.name) || byKey.get(n.relative_path))
+          .filter(Boolean)
+          .sort((a, b) => {
+            const score = (m) => (/прав|ву|license|driver|лиц/i.test(m.name) ? 0 : 1);
+            return score(a) - score(b);
+          })
+          .slice(0, 4);
+
+        setVuBusy(true, `OCR: ${ranked.length} фото…`);
+        setVuNote(`В базе не нашли — распознаю ${ranked.length} фото…`, "busy");
+        const payload = [];
+        for (const m of ranked) {
+          payload.push({
+            name: m.name,
+            folder_hint: m.folder_hint,
+            relative_path: m.relative_path,
+            data: await fileToBase64(m._file),
+          });
+        }
+        j = await resolveVuPayload(payload);
+      }
+
+      const rows = (j.results || []).filter((x) => x.ok || x.last_name);
+      if (!rows.length) {
+        setVuNote("Не удалось распознать / найти в базе", "err");
+        return;
+      }
+
+      if (rows.length === 1) {
+        applyVuRows(rows);
+        setVuNote("Список заменён: 1 вод. · КБМ можно проверить кнопкой ниже", "ok");
+        scheduleCalculate();
+      } else {
+        showDriverPick(rows, {
+          title: `Найдено ${rows.length} — отметьте, кого добавить`,
+        });
+        setVuNote("Выберите водителей. КБМ не запускается автоматически.", "ok");
+      }
+    } catch (e) {
+      setVuNote(e.message || String(e), "err");
+    } finally {
+      setVuBusy(false);
+    }
+  }
+
+  async function runKbmLogin() {
+    setVuBusy(true, "Вход на Банки.ру…");
+    setVuNote("Откроется окно Chromium — войдите один раз. Дальше проверки без окна.", "busy");
+    try {
+      const r = await fetch("/api/kbm/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "вход не выполнен");
+      setVuNote("Вход на Банки.ру сохранён. Можно проверять КБМ без окна.", "ok");
+    } catch (e) {
+      setVuNote(e.message || String(e), "err");
+    } finally {
+      setVuBusy(false);
+    }
+  }
+
+  async function runKbmCheck(force) {
+    const drivers = collectDriversForKbm();
+    if (!drivers.length) {
+      setVuNote("Для КБМ нужны ФИО, дата рождения и серия/номер ВУ (добавьте фото прав)", "err");
+      return;
+    }
+    setVuBusy(true, `КБМ: ${drivers.length} вод.…`);
+    setVuNote(`Проверяю КБМ у ${drivers.length} вод. (Banki.ru, без окна)…`, "busy");
+    try {
+      const r = await fetch("/api/kbm/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drivers, force: !!force }),
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "ошибка КБМ");
+      const results = j.results || [];
+      const nodes = el("drivers").querySelectorAll(".driver");
+      let okN = 0;
+      results.forEach((res, i) => {
+        const node = nodes[i];
+        if (!node) return;
+        const kbmInp = node.querySelector('[data-f="kbm"]');
+        if (res.ok && res.kbm != null && kbmInp) {
+          kbmInp.value = formatKbmStep(res.kbm);
+          kbmInp.dataset.kbmPrev = kbmInp.value;
+          okN += 1;
+        }
+      });
+      const errs = results.filter((x) => !x.ok).map((x) => x.error || "ошибка");
+      const needLogin = errs.some((e) => /войти на банки/i.test(e || ""));
+      setVuNote(
+        okN
+          ? `КБМ получен: ${okN}` + (errs.length ? `. Ошибки: ${errs.slice(0, 2).join("; ")}` : "")
+          : needLogin
+            ? "Нужен вход: нажмите «Войти на Банки.ру» один раз, затем снова «Проверить КБМ»"
+            : (errs[0] || "КБМ не получен"),
+        okN ? "ok" : "err"
+      );
+      scheduleCalculate();
+    } catch (e) {
+      setVuNote(e.message || String(e), "err");
+    } finally {
+      setVuBusy(false);
+    }
+  }
+
+  async function loadTariffs() {
+    tariffs = window.__TARIFFS__;
+    if (!tariffs) throw new Error("Нет тарифов");
+    const list = el("tbList");
+    list.innerHTML = "";
+    for (const cat of tariffs.tb_categories || []) {
+      const li = document.createElement("li");
+      li.dataset.id = cat.id;
+      li.innerHTML =
+        `<span class="tb-name"></span><span class="tb-rate"></span>`;
+      li.querySelector(".tb-name").textContent = cat.label;
+      li.querySelector(".tb-rate").textContent = rateText(cat);
+      li.onclick = () => {
+        setTbCategory(cat.id);
+        closeFloatingList(list, el("tbBtn"));
+      };
+      list.appendChild(li);
+    }
+    setTbCategory(selectedTbId);
+    initKtSelectors();
+    renderRefTables();
+
+    el("tbBtn").onclick = (e) => {
+      e.stopPropagation();
+      closeFloatingList(el("ktPlaceList"), el("ktPlaceBtn"));
+      if (list.classList.contains("open")) closeFloatingList(list, el("tbBtn"));
+      else openFloatingList(list, el("tbBtn"));
+    };
+    document.addEventListener("click", (e) => {
+      if (!el("tbPick").contains(e.target) && !list.contains(e.target)) {
+        closeFloatingList(list, el("tbBtn"));
+      }
+    });
+    const repinOpen = () => {
+      if (list.classList.contains("open")) pinFloatingList(list, el("tbBtn"));
+      const pl = el("ktPlaceList");
+      if (pl && pl.classList.contains("open")) pinFloatingList(pl, el("ktPlaceBtn"));
+    };
+    window.addEventListener("resize", repinOpen);
+    window.addEventListener("scroll", repinOpen, true);
+
+    el("tbSlider").oninput = () => {
+      if (syncingTb) return;
+      setTbValue(el("tbSlider").value, { fromSlider: true });
+    };
+    el("tbValue").oninput = () => {
+      if (syncingTb) return;
+      setTbValue(el("tbValue").value);
+    };
+    el("tbMinBtn").onclick = () => setTbValue(tbMin);
+    el("tbMaxBtn").onclick = () => setTbValue(tbMax);
+  }
+
+  function isUnlimitedKo() {
+    return Number(el("ko").value) !== 1;
+  }
+
+  function isPhysUnlimited() {
+    return isUnlimitedKo() && !el("legal").checked;
+  }
+
+  function syncDriversLock() {
+    const lock = isPhysUnlimited();
+    const panel = el("driversPanel");
+    panel.classList.toggle("is-locked", lock);
+    el("driversHint").hidden = !lock;
+    el("addDriver").disabled = lock;
+    if (el("clearDrivers")) el("clearDrivers").disabled = lock;
+    el("drivers").querySelectorAll("input, button").forEach((node) => {
+      node.disabled = lock;
+    });
+    scheduleCalculate();
+  }
+
+  function clearDrivers() {
+    if (isPhysUnlimited()) return;
+    if (!PUBLIC_MODE) hideDriverPick();
+    el("drivers").innerHTML = "";
+    driverN = 0;
+    addDriver({});
+    if (!PUBLIC_MODE) setVuNote("Список водителей очищен", "ok");
+    el("sum").textContent = "—";
+    el("factors").innerHTML = "";
+    el("err").hidden = true;
+    lastCalc = null;
+  }
+
+  function scheduleCalculate() {
+    clearTimeout(calcTimer);
+    calcTimer = setTimeout(() => {
+      calculate().catch((e) => {
+        el("err").hidden = false;
+        el("err").textContent = String(e);
+      });
+    }, 120);
+  }
+
+  function fmtFactor(v) {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return String(v);
+    return String(Math.round(n * 10000) / 10000).replace(".", ",");
+  }
+
+  function showFactors(f) {
+    const order = [
+      ["tb", "ТБ"], ["kt", "КТ"], ["kbm", "КБМ"], ["kvs", "КВС"],
+      ["ko", "КО"], ["ks", "КС"], ["kp", "КП"], ["km", "КМ"],
+    ];
+    el("factors").innerHTML = order.map(([k, lab]) =>
+      `<div class="factor"><b>${k === "tb" ? Number(f[k]).toLocaleString("ru-RU") : fmtFactor(f[k])}</b><span>${lab}</span></div>`
+    ).join("");
+  }
+
+  function numOrDefault(raw, fallback) {
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  async function calculate() {
+    el("err").hidden = true;
+    const powerHp = numOrNull(el("powerHp").value);
+    const body = {
+      tb: numOrNull(el("tbValue").value),
+      kt: numOrDefault(selectedKtValue, 1),
+      kt_territory_id: selectedKtId,
+      ko: numOrDefault(el("ko").value, 1),
+      power_hp: powerHp,
+      vehicle_category: vehicleGroupFromTb(),
+      use_months: numOrDefault(el("months").value, 10),
+      kpr: 1,
+      kn: 1,
+      legal_entity: el("legal").checked,
+    };
+    if (body.tb == null) body.tb = "B_phys";
+    if (isPhysUnlimited()) {
+      body.kbm = 1.17;
+      body.kvs = 1;
+      body.drivers = [];
+    } else {
+      const drivers = collectDrivers();
+      if (!drivers.length) {
+        el("err").hidden = false;
+        el("err").textContent = "Добавьте хотя бы одного водителя";
+        el("sum").textContent = "—";
+        return;
+      }
+      const incomplete = drivers.some(
+        (d) => (d.age == null && !d.birthday) || (d.experience == null && !d.stazh_start)
+      );
+      if (incomplete) {
+        el("err").hidden = false;
+        el("err").textContent = "Укажите возраст и стаж (или даты) для каждого водителя";
+        el("sum").textContent = "—";
+        el("factors").innerHTML = "";
+        return;
+      }
+      if (powerHp == null && vehicleGroupFromTb() !== "OTHER") {
+        el("err").hidden = false;
+        el("err").textContent = "Укажите мощность, л.с.";
+        el("sum").textContent = "—";
+        return;
+      }
+      body.drivers = drivers;
+    }
+    const j = (() => {
+      try {
+        if (isPhysUnlimited()) {
+          return OsagoCalcClient.calculatePremium({
+            tb: body.tb == null ? "B_phys" : body.tb,
+            kt: body.kt,
+            kbm: body.kbm,
+            ko: body.ko,
+            kvs: body.kvs,
+            legal_entity: body.legal_entity,
+            power_hp: body.power_hp,
+            vehicle_category: body.vehicle_category,
+            use_months: body.use_months,
+            kpr: body.kpr,
+            kp: body.kp,
+            kn: body.kn,
+          }, tariffs);
+        }
+        return OsagoCalcClient.calculateForDrivers(body.drivers, {
+          tb: body.tb == null ? "B_phys" : body.tb,
+          kt: body.kt,
+          ko: body.ko,
+          legal_entity: body.legal_entity,
+          power_hp: body.power_hp,
+          vehicle_category: body.vehicle_category,
+          use_months: body.use_months,
+          kpr: body.kpr,
+          kp: body.kp,
+          kn: body.kn,
+        }, tariffs);
+      } catch (e) {
+        return { ok: false, error: e.message || String(e) };
+      }
+    })();
+    if (!j.ok) {
+      el("err").hidden = false;
+      el("err").textContent = j.error || "Ошибка расчёта";
+      el("sum").textContent = "—";
+      return;
+    }
+    el("sum").textContent = j.premium.toLocaleString("ru-RU", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) + " ₽";
+    showFactors(j.factors);
+    if (j.factors && j.factors.km != null) el("kmValue").textContent = fmtFactor(j.factors.km);
+    if (j.factors && j.factors.ks != null) el("ksValue").textContent = fmtFactor(j.factors.ks);
+    if (j.factors && j.factors.ko != null) el("koValue").textContent = fmtFactor(j.factors.ko);
+    if (j.drivers) applyDriverKvs(j.drivers);
+    else el("drivers").querySelectorAll('[data-f="kvs"]').forEach((c) => { c.textContent = "—"; });
+    lastCalc = j;
+  }
+
+  function moneyRu(v) {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return "—";
+    return n.toLocaleString("ru-RU", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  function parseDateInput(raw) {
+    const s = String(raw || "").trim();
+    if (!s) return null;
+    let m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) return { y: +m[1], mo: +m[2], d: +m[3], iso: `${m[1]}-${m[2]}-${m[3]}` };
+    m = s.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+    if (m) {
+      const d = +m[1], mo = +m[2], y = +m[3];
+      const iso = `${y}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      return { y, mo, d, iso };
+    }
+    const dig = s.replace(/\D/g, "");
+    if (dig.length === 8) {
+      const d = +dig.slice(0, 2), mo = +dig.slice(2, 4), y = +dig.slice(4);
+      const iso = `${y}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      return { y, mo, d, iso };
+    }
+    return null;
+  }
+
+  function formatRuDate(p) {
+    return `${String(p.d).padStart(2, "0")}.${String(p.mo).padStart(2, "0")}.${p.y}`;
+  }
+
+  /** Цифры → дд.мм.гггг с автоточками */
+  function maskDateDots(raw) {
+    const digits = String(raw || "").replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+    return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`;
+  }
+
+  function applyDateMask(node) {
+    const before = node.value;
+    const caret = node.selectionStart == null ? before.length : node.selectionStart;
+    const digitsBefore = before.slice(0, caret).replace(/\D/g, "").length;
+    const masked = maskDateDots(before);
+    if (masked === before) return masked;
+    node.value = masked;
+    let i = 0;
+    let dig = 0;
+    for (; i < masked.length; i++) {
+      if (/\d/.test(masked[i])) dig++;
+      if (dig >= digitsBefore) {
+        i += 1;
+        break;
+      }
+    }
+    try { node.setSelectionRange(i, i); } catch (_) { /* ignore */ }
+    return masked;
+  }
+
+  function bindDateField(node, { onChange, onReady } = {}) {
+    node.addEventListener("input", () => {
+      applyDateMask(node);
+      if (onChange) onChange();
+      if (parseDateInput(node.value) && onReady) onReady();
+    });
+    node.addEventListener("blur", () => {
+      const p = parseDateInput(node.value);
+      if (p) node.value = formatRuDate(p);
+      if (onReady) onReady();
+      else if (onChange) onChange();
+    });
+  }
+
+  function daysBetweenISO(start, end) {
+    const a = parseDateInput(start);
+    const b = parseDateInput(end);
+    if (!a || !b) return null;
+    const da = new Date(a.iso + "T00:00:00");
+    const db = new Date(b.iso + "T00:00:00");
+    if (Number.isNaN(da.getTime()) || Number.isNaN(db.getTime())) return null;
+    return Math.max(0, Math.round((db - da) / 86400000));
+  }
+
+  function refundLocal(paid, daysUsed, yearDays = 365, retention = 0.23) {
+    const p0 = Number(paid) || 0;
+    const n = Math.max(0, Number(daysUsed) || 0);
+    const N = Math.max(1, Number(yearDays) || 365);
+    const ret = Number(retention) || 0.23;
+    const retained = p0 * ret;
+    const base = p0 - retained;
+    const daysLeft = Math.max(0, N - n);
+    const refundAmt = N ? (base * daysLeft) / N : 0;
+    return {
+      ok: true,
+      paid: p0,
+      days_used: n,
+      days_left: daysLeft,
+      year_days: N,
+      retention: ret,
+      retained: Math.round(retained * 100) / 100,
+      base_after_retention: Math.round(base * 100) / 100,
+      refund: Math.round(refundAmt * 100) / 100,
+      formula: "П1=(П0-(П0×0,23))×(N-n)/N",
+    };
+  }
+
+  function syncRefundDays() {
+    const nLocal = daysBetweenISO(el("refundStart").value, el("refundEnd").value);
+    if (nLocal == null) return null;
+    el("daysUsed").value = String(nLocal);
+    return nLocal;
+  }
+
+  function refund() {
+    const start = parseDateInput(el("refundStart").value);
+    const end = parseDateInput(el("refundEnd").value);
+    const paid = Number(el("paid").value);
+    const nLocal = syncRefundDays();
+
+    if (nLocal == null || !start || !end) {
+      if (!el("refundStart").value.trim() || !el("refundEnd").value.trim()) {
+        el("refundOut").innerHTML = `<div class="hint">Введите премию и даты</div>`;
+      }
+      return;
+    }
+
+    const j = refundLocal(paid, nLocal);
+    el("daysUsed").value = String(j.days_used);
+    el("refundYearDays").textContent = String(j.year_days);
+    el("refundOut").innerHTML = `
+      <div class="big">${moneyRu(j.refund)} ₽</div>
+    `;
+  }
+
+  function scheduleRefund() {
+    clearTimeout(refundTimer);
+    refundTimer = setTimeout(() => {
+      try { refund(); } catch (e) {
+        el("refundOut").innerHTML = `<div class="err">${String(e)}</div>`;
+      }
+    }, 60);
+  }
+
+  function endorseRowFactors(rowKey) {
+    const tr = el("endorseTable").querySelector(`tr[data-row="${rowKey}"]`);
+    const out = {};
+    tr.querySelectorAll("input[data-f]").forEach((inp) => {
+      out[inp.dataset.f] = Number(inp.value);
+    });
+    return out;
+  }
+
+  function syncKmFromOld() {
+    const km = endorseRowFactors("old").km;
+    ["new1", "new2"].forEach((key) => {
+      const inp = el("endorseTable").querySelector(`tr[data-row="${key}"] input[data-f="km"]`);
+      if (inp) inp.value = String(km);
+    });
+  }
+
+  function setEndorseHint(msg) {
+    const node = el("endorseHint");
+    if (!msg) {
+      node.hidden = true;
+      node.textContent = "";
+      return;
+    }
+    node.hidden = false;
+    node.textContent = msg;
+  }
+
+  function scheduleEndorse() {
+    clearTimeout(endorseTimer);
+    endorseTimer = setTimeout(() => {
+      endorseRecalc().catch((e) => setEndorseHint(String(e)));
+    }, 120);
+  }
+
+  function endorseLocal(oldF, newF, daysLeft, yearDays = 365) {
+    const oldP = oldF.tb * oldF.kt * oldF.kbm * oldF.kvs * oldF.ko * oldF.ks * oldF.km;
+    const newP = newF.tb * newF.kt * newF.kbm * newF.kvs * newF.ko * newF.ks * newF.km;
+    const add = yearDays ? ((newP - oldP) / yearDays) * daysLeft : 0;
+    return {
+      ok: true,
+      premium_old: Math.round(oldP * 100) / 100,
+      premium_new: Math.round(newP * 100) / 100,
+      surcharge: Math.round(add * 100) / 100,
+      days_left: daysLeft,
+      year_days: yearDays,
+    };
+  }
+
+  async function endorseRecalc() {
+    const old = endorseRowFactors("old");
+    const d1p = parseDateInput(el("endorseDate").value);
+    const d2p = parseDateInput(el("endorseEnd").value);
+    if (!d1p || !d2p) {
+      el("endorseDaysLeft").textContent = "—";
+      return;
+    }
+    const daysLeft = daysBetweenISO(d1p.iso, d2p.iso);
+    if (daysLeft == null) {
+      el("endorseDaysLeft").textContent = "—";
+      return;
+    }
+    el("endorseDaysLeft").textContent = String(daysLeft);
+
+    const j1 = endorseLocal(old, endorseRowFactors("new1"), daysLeft);
+    const j2 = endorseLocal(old, endorseRowFactors("new2"), daysLeft);
+    el("endorseOldPremium").textContent = moneyRu(j1.premium_old) + " ₽";
+    el("endorseNew1").textContent = moneyRu(j1.surcharge) + " ₽";
+    el("endorseNew2").textContent = moneyRu(j2.surcharge) + " ₽";
+    setEndorseHint("");
+  }
+
+  function fillEndorseFromCalc() {
+    if (!lastCalc || !lastCalc.factors) {
+      setEndorseHint("Сначала посчитайте премию выше");
+      return;
+    }
+    const f = lastCalc.factors;
+    const tr = el("endorseTable").querySelector('tr[data-row="old"]');
+    const map = {
+      tb: f.tb,
+      kt: f.kt,
+      kbm: f.kbm,
+      kvs: f.kvs,
+      ko: f.ko,
+      ks: f.ks,
+      km: f.km,
+    };
+    Object.entries(map).forEach(([k, v]) => {
+      const inp = tr.querySelector(`input[data-f="${k}"]`);
+      if (inp && v != null) inp.value = String(v);
+    });
+    syncKmFromOld();
+    setEndorseHint("");
+    scheduleEndorse();
+  }
+
+  el("addDriver").onclick = () => {
+    if (isPhysUnlimited()) return;
+    addDriver();
+    scheduleCalculate();
+  };
+  el("clearDrivers").onclick = () => clearDrivers();
+  el("endorseFromCalc").onclick = () => fillEndorseFromCalc();
+  bindDateField(el("refundStart"), {
+    onChange: () => { syncRefundDays(); },
+    onReady: () => scheduleRefund(),
+  });
+  bindDateField(el("refundEnd"), {
+    onChange: () => { syncRefundDays(); },
+    onReady: () => scheduleRefund(),
+  });
+  el("paid").addEventListener("input", scheduleRefund);
+  el("paid").addEventListener("change", scheduleRefund);
+  el("paid").addEventListener("blur", () => scheduleRefund());
+  bindDateField(el("endorseDate"), {
+    onChange: scheduleEndorse,
+    onReady: scheduleEndorse,
+  });
+  bindDateField(el("endorseEnd"), {
+    onChange: scheduleEndorse,
+    onReady: scheduleEndorse,
+  });
+  el("endorseTable").querySelectorAll("input").forEach((inp) => {
+    const onEdit = () => {
+      const tr = inp.closest("tr");
+      const row = tr && tr.dataset.row;
+      if (row === "old" && inp.dataset.f === "km") syncKmFromOld();
+      scheduleEndorse();
+    };
+    inp.addEventListener("input", onEdit);
+    inp.addEventListener("change", onEdit);
+  });
+  el("ko").onchange = () => {
+    refreshKoDisplay();
+    syncDriversLock();
+  };
+  el("legal").onchange = () => syncDriversLock();
+  el("months").onchange = () => {
+    refreshKsDisplay();
+    scheduleCalculate();
+  };
+  const onPowerHpChange = () => {
+    if (syncingPower) return;
+    setPowerHp(el("powerHp").value);
+    refreshKmDisplay();
+    scheduleCalculate();
+  };
+  const onPowerKwChange = () => {
+    if (syncingPower) return;
+    setPowerKw(el("powerKw").value);
+    refreshKmDisplay();
+    scheduleCalculate();
+  };
+  el("powerHp").oninput = onPowerHpChange;
+  el("powerHp").onchange = onPowerHpChange;
+  el("powerKw").oninput = onPowerKwChange;
+  el("powerKw").onchange = onPowerKwChange;
+
+
+  loadTariffs()
+    .then(() => {
+      setPowerHp(110);
+      refreshKmDisplay();
+      refreshKsDisplay();
+      refreshKoDisplay();
+      addDriver({});
+      syncDriversLock();
+      syncRefundDays();
+      scheduleRefund();
+      scheduleEndorse();
+      // без возраста/стажа премию не считаем — поля пустые до ввода
+    })
+    .catch((e) => {
+      el("err").hidden = false;
+      el("err").textContent = String(e);
+    });
+</script>
+</body>
+</html>
