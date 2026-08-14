@@ -751,12 +751,25 @@
     }
     .check input { width: auto; flex-shrink: 0; }
     .tb-block { grid-column: 1 / -1; }
+    .kt-mode-row {
+      margin-top: 8px;
+    }
+    .kt-mode-row select {
+      width: 100%;
+      max-width: 32rem;
+    }
     .kt-row {
       display: grid;
       grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr) auto;
       gap: 10px;
       margin-top: 8px;
       align-items: end;
+    }
+    .kt-row[hidden] {
+      display: none !important;
+    }
+    .kt-row.kt-row--foreign {
+      grid-template-columns: minmax(0, 1fr) auto;
     }
     .kt-row select,
     .kt-row .tb-pick {
@@ -776,8 +789,15 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+    .kt-foreign-hint {
+      margin: 6px 0 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
     @media (max-width: 720px) {
       .kt-row { grid-template-columns: 1fr; align-items: stretch; }
+      .kt-row.kt-row--foreign { grid-template-columns: 1fr; }
     }
     .tb-pick { position: relative; }
     .tb-btn {
@@ -1093,8 +1113,14 @@
         <p class="tb-out ok" id="tbOut">Тарифный коридор …</p>
       </div>
       <div class="tb-block">
-        <label>КТ — территория преимущественного использования</label>
-        <div class="kt-row">
+        <label for="ktMode">КТ — территория / иностранный учёт</label>
+        <div class="kt-mode-row">
+          <select id="ktMode" aria-label="Режим КТ">
+            <option value="rf" selected>РФ — территория преимущественного использования</option>
+            <option value="foreign">Иностранный учёт (временно в РФ)</option>
+          </select>
+        </div>
+        <div class="kt-row" id="ktRfRow">
           <div>
             <label for="ktRegion">Регион</label>
             <select id="ktRegion"></select>
@@ -1112,6 +1138,21 @@
           <div class="kt-coeff">
             <label>КТ</label>
             <div id="ktValue" class="tb-rate" style="padding:9px 0;font-size:1.1rem">—</div>
+          </div>
+        </div>
+        <div class="kt-row kt-row--foreign" id="ktForeignRow" hidden>
+          <div>
+            <label for="ktForeign">Вариант по 7204-У, прил. 2</label>
+            <select id="ktForeign">
+              <option value="1.7" selected>1,7 — обычный иностранный учёт</option>
+              <option value="30">30 — Перечень недружественных (прочие)</option>
+              <option value="0.68">0,68 — Украина / ДНР·ЛНР·Запорожье·Херсон</option>
+            </select>
+            <p class="kt-foreign-hint" id="ktForeignHint">A/M/B физлица из Перечня недружественных или любые собственники из стран вне Перечня</p>
+          </div>
+          <div class="kt-coeff">
+            <label>КТ</label>
+            <div id="ktForeignValue" class="tb-rate" style="padding:9px 0;font-size:1.1rem">1,7</div>
           </div>
         </div>
       </div>
@@ -1889,8 +1930,12 @@ const PUBLIC_MODE = true;
     el("tbBoundMax").textContent = fmtRub(tbMax);
     el("tbValue").min = String(tbMin);
     el("tbValue").max = String(tbMax);
-    if (resetValue) setTbValue(tbMax);
-    else updateTbOut(Number(el("tbValue").value));
+    if (resetValue) {
+      const foreignBPhys = isForeignKt() && cat.id === "B_phys";
+      setTbValue(foreignBPhys ? 5500 : tbMax);
+    } else {
+      updateTbOut(Number(el("tbValue").value));
+    }
     refreshKtDisplay();
     refreshKmDisplay();
     scheduleCalculate();
@@ -2023,7 +2068,56 @@ const PUBLIC_MODE = true;
     el("ktPlaceRate").textContent = fmtKt(rowKt(row));
   }
 
+  function isForeignKt() {
+    return el("ktMode") && el("ktMode").value === "foreign";
+  }
+
+  function foreignKtHint(v) {
+    const n = Number(v);
+    if (n === 30) {
+      return "Юрлица и прочие ТС из стран Перечня недружественных (не строка A/M/B физлица) — прил. 2 п. 1.2 стр. 2";
+    }
+    if (n === 0.68) {
+      return "ТС с Украины, собственники — юрлица ДНР/ЛНР/Запорожье/Херсон или граждане РФ — прил. 2 п. 1.1 стр. 1";
+    }
+    return "A/M/B физлица из Перечня недружественных или любые собственники из стран вне Перечня — прил. 2 п. 1.2";
+  }
+
+  function applyForeignKt() {
+    const raw = el("ktForeign").value;
+    const v = Number(raw);
+    selectedKtId = null;
+    selectedKtValue = Number.isFinite(v) ? v : 1.7;
+    el("ktForeignValue").textContent = fmtKt(selectedKtValue);
+    el("ktValue").textContent = fmtKt(selectedKtValue);
+    if (el("ktForeignHint")) el("ktForeignHint").textContent = foreignKtHint(selectedKtValue);
+  }
+
+  function setKtMode(mode, { recalc = true } = {}) {
+    if (!el("ktMode")) return;
+    el("ktMode").value = mode === "foreign" ? "foreign" : "rf";
+    const foreign = isForeignKt();
+    if (el("ktRfRow")) el("ktRfRow").hidden = foreign;
+    if (el("ktForeignRow")) el("ktForeignRow").hidden = !foreign;
+    if (foreign) {
+      applyForeignKt();
+      // Для B физлица при иностранном учёте по умолчанию ТБ = 5500
+      if (tariffs) {
+        setTbCategory("B_phys", { resetValue: false });
+        setTbValue(5500);
+        return;
+      }
+    } else {
+      refreshKtDisplay();
+    }
+    if (recalc) scheduleCalculate();
+  }
+
   function refreshKtDisplay() {
+    if (isForeignKt()) {
+      applyForeignKt();
+      return;
+    }
     const row = ktById(selectedKtId);
     if (!row) {
       el("ktValue").textContent = "—";
@@ -2101,6 +2195,17 @@ const PUBLIC_MODE = true;
         closeFloatingList(placeList, placeBtn);
       }
     });
+
+    if (el("ktMode")) {
+      el("ktMode").onchange = () => setKtMode(el("ktMode").value);
+    }
+    if (el("ktForeign")) {
+      el("ktForeign").onchange = () => {
+        applyForeignKt();
+        scheduleCalculate();
+      };
+    }
+    setKtMode("rf", { recalc: false });
   }
 
   function parseRuDate(s) {
@@ -2786,6 +2891,7 @@ const PUBLIC_MODE = true;
 
   function applyKtTerritory(row) {
     if (!row || !row.id) return null;
+    setKtMode("rf", { recalc: false });
     const regSel = el("ktRegion");
     if (regSel) regSel.value = row.region;
     fillKtPlaces(row.region, row.id);
@@ -3469,7 +3575,7 @@ const PUBLIC_MODE = true;
     const body = {
       tb: numOrNull(el("tbValue").value),
       kt: numOrDefault(selectedKtValue, 1),
-      kt_territory_id: selectedKtId,
+      kt_territory_id: isForeignKt() ? null : selectedKtId,
       ko: numOrDefault(el("ko").value, 1),
       power_hp: powerHp,
       vehicle_category: vehicleGroupFromTb(),
