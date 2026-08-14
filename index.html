@@ -795,6 +795,20 @@
       color: var(--muted);
       line-height: 1.35;
     }
+    .legal-kbm-row {
+      display: grid;
+      grid-template-columns: minmax(8rem, 12rem) 1fr;
+      gap: 10px 14px;
+      align-items: end;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+    .legal-kbm-row[hidden] { display: none !important; }
+    .legal-kbm-row .tb-hint { align-self: center; }
+    @media (max-width: 720px) {
+      .legal-kbm-row { grid-template-columns: 1fr; }
+    }
     @media (max-width: 720px) {
       .kt-row { grid-template-columns: 1fr; align-items: stretch; }
       .kt-row.kt-row--foreign { grid-template-columns: 1fr; }
@@ -1193,16 +1207,20 @@
           <div class="pair-split">
             <select id="ko">
               <option value="1" selected>Ограниченный</option>
-              <option value="3.16">Неограниченный</option>
+              <option value="unlim">Неограниченный</option>
             </select>
             <div class="km-out" id="koValue" title="Коэффициент КО">1</div>
           </div>
         </div>
       </div>
-      <label class="check" for="legal">
-        <input type="checkbox" id="legal">
-        <span>Собственник — юрлицо (КВС × 1,8)</span>
-      </label>
+      <p class="tb-hint" id="legalOwnerWarn" hidden style="margin:0;color:#c45c26">Собственник — юрлицо: к КВС применяется множитель × 1,8</p>
+      <div class="legal-kbm-row" id="legalKbmWrap" hidden>
+        <div>
+          <label for="legalKbm">КБМ юрлица</label>
+          <input id="legalKbm" class="tb-value-input" type="text" inputmode="decimal" value="1.17" autocomplete="off">
+        </div>
+        <p class="tb-hint" style="margin:0">Произвольное значение (среднее по ТС в АИС), не шкала водителей</p>
+      </div>
   </section>
 
   <section class="panel" id="driversPanel">
@@ -1578,7 +1596,10 @@
   function calculateForDrivers(drivers, opts, tariffs) {
     if (!drivers || !drivers.length) throw new Error("Нужен хотя бы один водитель");
     const vehicleCategory = opts.vehicle_category || "B";
-    const kbmMax = Math.max(...drivers.map((d) => Number(d.kbm || 1)));
+    const kbmMax =
+      opts.kbm != null && opts.kbm !== ""
+        ? Number(opts.kbm)
+        : Math.max(...drivers.map((d) => Number(d.kbm || 1)));
     const details = [];
     const kvsVals = [];
     for (const d of drivers) {
@@ -1931,6 +1952,17 @@ const PUBLIC_MODE = true;
     el("tbBoundMax").textContent = fmtRub(tbMax);
     el("tbValue").min = String(tbMin);
     el("tbValue").max = String(tbMax);
+    syncLegalKbmUi();
+    refreshKoDisplay();
+    const lock = isPhysUnlimited() || isLegalUnlimited();
+    const panel = el("driversPanel");
+    if (panel) panel.classList.toggle("is-locked", lock);
+    if (el("driversHint")) el("driversHint").hidden = !lock;
+    if (el("addDriver")) el("addDriver").disabled = lock;
+    if (el("clearDrivers")) el("clearDrivers").disabled = lock;
+    el("drivers").querySelectorAll("input, button").forEach((node) => {
+      node.disabled = lock;
+    });
     if (resetValue) {
       const foreignBPhys = isForeignKt() && cat.id === "B_phys";
       setTbValue(foreignBPhys ? 5500 : tbMax);
@@ -1999,8 +2031,52 @@ const PUBLIC_MODE = true;
   }
 
   function refreshKoDisplay() {
-    const ko = Number(el("ko").value);
-    el("koValue").textContent = Number.isFinite(ko) ? fmtKt(ko) : "—";
+    el("koValue").textContent = fmtKt(koCoefficient());
+  }
+
+  function isLegalEntity() {
+    return selectedTbId === "B_legal";
+  }
+
+  function isUnlimitedKo() {
+    const v = el("ko").value;
+    return v === "unlim" || v === "3.16" || (Number(v) !== 1 && Number.isFinite(Number(v)) && Number(v) > 1);
+  }
+
+  function koCoefficient() {
+    if (!isUnlimitedKo()) return 1;
+    return isLegalEntity() ? 1.97 : 3.16;
+  }
+
+  function parseLegalKbm() {
+    const n = parseKbmNumber(el("legalKbm") && el("legalKbm").value);
+    return n != null ? n : 1.17;
+  }
+
+  function formatFreeKbm(v) {
+    const n = Number(String(v).replace(",", "."));
+    if (!Number.isFinite(n) || n < 0) return "1.17";
+    return String(Math.round(n * 100) / 100);
+  }
+
+  function syncLegalKbmUi() {
+    const legal = isLegalEntity();
+    if (el("legalOwnerWarn")) el("legalOwnerWarn").hidden = !legal;
+    if (el("legalKbmWrap")) el("legalKbmWrap").hidden = !legal;
+    el("drivers").querySelectorAll(".kbm-box").forEach((box) => {
+      box.classList.toggle("is-free", legal);
+      const spin = box.querySelector(".kbm-spin");
+      if (spin) spin.hidden = legal;
+    });
+    if (el("driversHint")) {
+      if (isPhysUnlimited()) {
+        el("driversHint").textContent =
+          "Неограниченный допуск (физлицо): КБМ = 1,17, список водителей не используется";
+      } else if (isUnlimitedKo() && legal) {
+        el("driversHint").textContent =
+          "Неограниченный допуск (юрлицо): КО = 1,97, КБМ юрлица, список водителей не используется";
+      }
+    }
   }
 
   function setPowerHp(hp, { fromKw } = {}) {
@@ -2305,6 +2381,7 @@ const PUBLIC_MODE = true;
   }
 
   function bumpKbm(inp, dir) {
+    if (isLegalEntity()) return;
     const steps = kbmSteps();
     const prev = parseKbmNumber(inp.dataset.kbmPrev);
     const shown = parseKbmNumber(inp.value);
@@ -2337,10 +2414,15 @@ const PUBLIC_MODE = true;
     inp.removeAttribute("max");
     inp.removeAttribute("step");
     const start = parseKbmNumber(inp.value);
-    inp.value = formatKbmStep(start != null ? kbmSteps()[nearestKbmIndex(start, kbmSteps())] : 1.17);
+    if (isLegalEntity()) {
+      inp.value = formatFreeKbm(start != null ? start : 1.17);
+    } else {
+      inp.value = formatKbmStep(start != null ? kbmSteps()[nearestKbmIndex(start, kbmSteps())] : 1.17);
+    }
     inp.dataset.kbmPrev = inp.value;
 
     inp.addEventListener("keydown", (e) => {
+      if (isLegalEntity()) return;
       if (e.key === "ArrowUp") {
         e.preventDefault();
         bumpKbm(inp, 1);
@@ -2350,24 +2432,40 @@ const PUBLIC_MODE = true;
       }
     });
     inp.addEventListener("wheel", (e) => {
+      if (isLegalEntity()) return;
       if (document.activeElement !== inp) return;
       e.preventDefault();
       bumpKbm(inp, e.deltaY < 0 ? 1 : -1);
     }, { passive: false });
+    inp.addEventListener("input", () => {
+      if (!isLegalEntity()) return;
+      scheduleCalculate();
+    });
     inp.addEventListener("blur", () => {
-      const steps = kbmSteps();
       const cur = parseKbmNumber(inp.value);
-      const snapped = steps[nearestKbmIndex(cur != null ? cur : 1.17, steps)];
-      inp.value = formatKbmStep(snapped);
+      if (isLegalEntity()) {
+        inp.value = formatFreeKbm(cur != null ? cur : 1.17);
+      } else {
+        const steps = kbmSteps();
+        const snapped = steps[nearestKbmIndex(cur != null ? cur : 1.17, steps)];
+        inp.value = formatKbmStep(snapped);
+      }
       inp.dataset.kbmPrev = inp.value;
       scheduleCalculate();
     });
+    const box = inp.closest(".kbm-box");
+    if (box) {
+      box.classList.toggle("is-free", isLegalEntity());
+      const spin = box.querySelector(".kbm-spin");
+      if (spin) spin.hidden = isLegalEntity();
+    }
   }
 
   document.addEventListener("click", (e) => {
     const t = e.target && e.target.nodeType === 1 ? e.target : (e.target && e.target.parentElement);
     const btn = t && t.closest && t.closest("[data-kbm-dir]");
     if (!btn) return;
+    if (isLegalEntity()) return;
     e.preventDefault();
     const box = btn.closest(".kbm-box");
     const inp = box && box.querySelector('[data-f="kbm"]');
@@ -2472,6 +2570,10 @@ const PUBLIC_MODE = true;
     stazhInp.onpaste = () => setTimeout(syncExpFromStazh, 0);
     ageInp.oninput = syncDobFromAge;
     expInp.oninput = syncStazhFromExp;
+    ageInp.onchange = syncDobFromAge;
+    expInp.onchange = syncStazhFromExp;
+    ageInp.onblur = syncDobFromAge;
+    expInp.onblur = syncStazhFromExp;
     if (vuInp) {
       vuInp.oninput = () => applyVu(vuInp.value);
       vuInp.onpaste = (e) => {
@@ -3512,29 +3614,31 @@ const PUBLIC_MODE = true;
     el("tbMaxBtn").onclick = () => setTbValue(tbMax);
   }
 
-  function isUnlimitedKo() {
-    return Number(el("ko").value) !== 1;
+  function isPhysUnlimited() {
+    return isUnlimitedKo() && !isLegalEntity();
   }
 
-  function isPhysUnlimited() {
-    return isUnlimitedKo() && !el("legal").checked;
+  function isLegalUnlimited() {
+    return isUnlimitedKo() && isLegalEntity();
   }
 
   function syncDriversLock() {
-    const lock = isPhysUnlimited();
+    const lock = isPhysUnlimited() || isLegalUnlimited();
     const panel = el("driversPanel");
     panel.classList.toggle("is-locked", lock);
+    syncLegalKbmUi();
     el("driversHint").hidden = !lock;
     el("addDriver").disabled = lock;
     if (el("clearDrivers")) el("clearDrivers").disabled = lock;
     el("drivers").querySelectorAll("input, button").forEach((node) => {
       node.disabled = lock;
     });
+    refreshKoDisplay();
     scheduleCalculate();
   }
 
   function clearDrivers() {
-    if (isPhysUnlimited()) return;
+    if (isPhysUnlimited() || isLegalUnlimited()) return;
     if (!PUBLIC_MODE) hideDriverPick();
     el("drivers").innerHTML = "";
     driverN = 0;
@@ -3584,17 +3688,21 @@ const PUBLIC_MODE = true;
       tb: numOrNull(el("tbValue").value),
       kt: numOrDefault(selectedKtValue, 1),
       kt_territory_id: isForeignKt() ? null : selectedKtId,
-      ko: numOrDefault(el("ko").value, 1),
+      ko: koCoefficient(),
       power_hp: powerHp,
       vehicle_category: vehicleGroupFromTb(),
       use_months: numOrDefault(el("months").value, 10),
       kpr: 1,
       kn: 1,
-      legal_entity: el("legal").checked,
+      legal_entity: isLegalEntity(),
     };
     if (body.tb == null) body.tb = "B_phys";
     if (isPhysUnlimited()) {
       body.kbm = 1.17;
+      body.kvs = 1;
+      body.drivers = [];
+    } else if (isLegalUnlimited()) {
+      body.kbm = parseLegalKbm();
       body.kvs = 1;
       body.drivers = [];
     } else {
@@ -3605,12 +3713,15 @@ const PUBLIC_MODE = true;
         el("sum").textContent = "—";
         return;
       }
-      const incomplete = drivers.some(
-        (d) => (d.age == null && !d.birthday) || (d.experience == null && !d.stazh_start)
-      );
+      const incomplete = drivers.some((d) => {
+        const hasAge = d.age != null || !!String(d.birthday || "").trim();
+        const hasExp = d.experience != null || !!String(d.stazh_start || "").trim();
+        return !hasAge || !hasExp;
+      });
       if (incomplete) {
         el("err").hidden = false;
-        el("err").textContent = "Укажите возраст и стаж (или даты) для каждого водителя";
+        el("err").textContent =
+          "Для расчёта укажите возраст и стаж (годы) или даты — ФИО и проверка КБМ не обязательны";
         el("sum").textContent = "—";
         el("factors").innerHTML = "";
         return;
@@ -3622,10 +3733,13 @@ const PUBLIC_MODE = true;
         return;
       }
       body.drivers = drivers;
+      if (isLegalEntity()) {
+        body.kbm = parseLegalKbm();
+      }
     }
     const j = (() => {
       try {
-        if (isPhysUnlimited()) {
+        if (isPhysUnlimited() || isLegalUnlimited()) {
           return OsagoCalcClient.calculatePremium({
             tb: body.tb == null ? "B_phys" : body.tb,
             kt: body.kt,
@@ -3652,6 +3766,7 @@ const PUBLIC_MODE = true;
           kpr: body.kpr,
           kp: body.kp,
           kn: body.kn,
+          kbm: body.kbm,
         }, tariffs);
       } catch (e) {
         return { ok: false, error: e.message || String(e) };
@@ -3663,6 +3778,8 @@ const PUBLIC_MODE = true;
       el("sum").textContent = "—";
       return;
     }
+    el("err").hidden = true;
+    el("err").textContent = "";
     el("sum").textContent = j.premium.toLocaleString("ru-RU", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -3919,7 +4036,7 @@ const PUBLIC_MODE = true;
   }
 
   el("addDriver").onclick = () => {
-    if (isPhysUnlimited()) return;
+    if (isPhysUnlimited() || isLegalUnlimited()) return;
     addDriver();
     scheduleCalculate();
   };
@@ -3958,7 +4075,14 @@ const PUBLIC_MODE = true;
     refreshKoDisplay();
     syncDriversLock();
   };
-  el("legal").onchange = () => syncDriversLock();
+  if (el("legalKbm")) {
+    el("legalKbm").addEventListener("input", scheduleCalculate);
+    el("legalKbm").addEventListener("change", scheduleCalculate);
+    el("legalKbm").addEventListener("blur", () => {
+      el("legalKbm").value = formatFreeKbm(el("legalKbm").value);
+      scheduleCalculate();
+    });
+  }
   el("months").onchange = () => {
     refreshKsDisplay();
     scheduleCalculate();
