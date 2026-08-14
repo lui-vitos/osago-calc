@@ -1639,6 +1639,7 @@ const PUBLIC_MODE = true;
   let selectedTbId = "B_phys";
   let selectedKtId = "8.1";
   let selectedKtValue = 1;
+  let ktModeIsForeign = false;
   let tbMin = 1399;
   let tbMax = 8665;
   let syncingTb = false;
@@ -2069,7 +2070,7 @@ const PUBLIC_MODE = true;
   }
 
   function isForeignKt() {
-    return el("ktMode") && el("ktMode").value === "foreign";
+    return ktModeIsForeign;
   }
 
   function foreignKtHint(v) {
@@ -2095,11 +2096,13 @@ const PUBLIC_MODE = true;
 
   function setKtMode(mode, { recalc = true } = {}) {
     if (!el("ktMode")) return;
-    el("ktMode").value = mode === "foreign" ? "foreign" : "rf";
-    const foreign = isForeignKt();
-    if (el("ktRfRow")) el("ktRfRow").hidden = foreign;
-    if (el("ktForeignRow")) el("ktForeignRow").hidden = !foreign;
-    if (foreign) {
+    const wantForeign = mode === "foreign";
+    const wasForeign = ktModeIsForeign;
+    el("ktMode").value = wantForeign ? "foreign" : "rf";
+    ktModeIsForeign = wantForeign;
+    if (el("ktRfRow")) el("ktRfRow").hidden = wantForeign;
+    if (el("ktForeignRow")) el("ktForeignRow").hidden = !wantForeign;
+    if (wantForeign) {
       applyForeignKt();
       // Для B физлица при иностранном учёте по умолчанию ТБ = 5500
       if (tariffs) {
@@ -2109,6 +2112,11 @@ const PUBLIC_MODE = true;
       }
     } else {
       refreshKtDisplay();
+      // С иностранного учёта обратно на РФ — ТБ на максимум коридора
+      if (wasForeign && tariffs) {
+        setTbValue(tbMax);
+        return;
+      }
     }
     if (recalc) scheduleCalculate();
   }
